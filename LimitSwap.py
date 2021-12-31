@@ -1072,7 +1072,7 @@ elif settings['EXCHANGE'].lower() == 'babyswap':
         client = Web3(Web3.IPCProvider(my_provider))
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading PinkSwap Smart Contracts...")
+    print(timestamp(), "Loading BabySwap Smart Contracts...")
 
     routerAddress = Web3.toChecksumAddress("0x325E343f1dE602396E256B67eFd1F61C3A6B38Bd")
     factoryAddress = Web3.toChecksumAddress("0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da")
@@ -1107,7 +1107,7 @@ elif settings['EXCHANGE'] == 'bakeryswap':
         client = Web3(Web3.IPCProvider(my_provider))
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading PinkSwap Smart Contracts...")
+    print(timestamp(), "Loading BakerySwap Smart Contracts...")
 
     routerAddress = Web3.toChecksumAddress("0xCDe540d7eAFE93aC5fE6233Bee57E1270D3E330F")
     factoryAddress = Web3.toChecksumAddress("0x01bF7C66c6BD861915CdaaE475042d3c4BaE16A7")
