@@ -9,6 +9,8 @@ import web3
 from web3.exceptions import ABIFunctionNotFound, TransactionNotFound, BadFunctionCallOutput
 import logging
 from datetime import datetime
+from functools import lru_cache
+from hexbytes import HexBytes
 import sys
 import requests
 import cryptocode, re, pwinput
@@ -707,7 +709,6 @@ def reload_tokens_file(tokens_path, load_message=True):
     # _LAST_PRICE_MESSAGE   - a copy of the last pricing message printed to console, used to determine the price
     #                         should be printed again, or just a dot
     
-    # TODO: document all these variables
     program_defined_values = {
         '_LIQUIDITY_READY': False,
         '_LIQUIDITY_CHECKED': False,
@@ -1504,7 +1505,7 @@ def parse_wallet_settings(settings, pwd):
         save_settings(settings, pwd)
 
 
-@cache
+@lru_cache(maxsize=None)
 def decimals(address):
     # Function: decimals
     # ----------------------------
@@ -1805,25 +1806,26 @@ def check_rugdoc_api(token):
 
 
 def wait_for_open_trade(token):
+    printt_debug("ENTER wait_for_open_trade")
     openTrade = False
-    tx_filter = client.eth.filter({"filter_params": "pending", "address": token})
+    token = Web3.toChecksumAddress(token)
 
-    list_of_methodId = ["0x7ff36ab5", "0xbccce037"]
+    tx_filter = client.eth.filter({"filter_params": "pending", "address": token})
+    printt_debug("tx_filter:", tx_filter)
+    list_of_methodId = ["0x0d295980", "0xbccce037"]
 
     # Examples of tokens and functions used
     #
     
-    # Jade - 0x7ad7242a99f21aa543f9650a56d141c57e4f6081
-    # Function: Transfer
-    # methodId = "0x7ff36ab5"
+    # New Years Moon (NYMOON) - 0xa2e0f8882b85f02d04eb509a7688d569614c3771
+    # https://bscscan.com/tx/0x19cac49bf8319689a7620935bf9466e469317992b994ec9692697a9ef71e3ace
+    # Function: tradingStatus
+    # methodId = "0x0d295980"
 
     # WitcherVerse - 0xD2f71875d66188F96BaDBF98a5F020894209E34b
-    # https://bscscan.com/tx/0x19cac49bf8319689a7620935bf9466e469317992b994ec9692697a9ef71e3ace
+    # https://bscscan.com/tx/0xb42089396c1b1f887cb79e0cf48ae785aa92fa66f0645c759244f70b2a2834f9
     # Function: preSaleAfter()
     # methodId = "0xbccce037"
-
-    # https://bscscan.com/tx/0xb42089396c1b1f887cb79e0cf48ae785aa92fa66f0645c759244f70b2a2834f9
-    #
 
 
     while openTrade == False:
@@ -1835,13 +1837,15 @@ def wait_for_open_trade(token):
                 txFunction = txHashDetails.input[:10]
                 if txFunction.lower() in list_of_methodId:
                     openTrade = True
-                    print(timestamp(), " MethodID: ", txFunction, " Block: ", tx_event['blockNumber'], " Found Signal")
-                    #break
+                    printt_ok("OPEN TRADE FUNCTION DETECTED --> Trading is enabled --> Bot will buy")
+                    printt_ok("MethodID: ", txFunction, " Block: ", tx_event['blockNumber'], " Found Signal", "in txHash:", txHash.hex())
+                    break
                 else:
-                    print(timestamp(), " MethodID: ", txFunction, " Block: ", tx_event['blockNumber'])
-        except:
-            print(timestamp(), " Error")
-            wait_for_open_trade(token)
+                    printt(" MethodID: ", txFunction, " Block: ", tx_event['blockNumber'])
+        except Exception as e:
+            printt_err("wait_for_open_trade finished in Error. Please report it to LimitSwap team")
+            logger1.exception(e)
+            sys.exit()
 
 
 def get_tokens_purchased(tx_hash):
@@ -3649,23 +3653,6 @@ def run():
         load_token_file_increment = 0
         tokens_file_modified_time = os.path.getmtime(command_line_args.tokens)
         
-        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true':
-            printt_info(
-                "-----------------------------------------------------------------------------------------------------------------------------")
-            printt_info("WAIT_FOR_OPEN_TRADE = true --> Bot will wait for price to move before making a BUY order")
-            printt_info(" ")
-            printt_err("BE CAREFUL:")
-            printt_err(
-                "to make WAIT_FOR_OPEN_TRADE work, you need to snipe on the same liquidity pair that liquidity added by the team:")
-            printt_info(" ")
-            printt_info(
-                "Example : If you try to snipe in BUSD and liquidity is in BNB, price will move because of price movement between BUSD and BNB")
-            printt_info(
-                "--> if liquidity is in BNB or ETH, use LIQUIDITYINNATIVETOKEN = true and USECUSTOMBASEPAIR = false")
-            printt_info(" ")
-            printt_info(
-                "------------------------------------------------------------------------------------------------------------------------------")
-        
         while True:
             
             # Check to see if the tokens file has changed every 10 iterations
@@ -3767,14 +3754,40 @@ def run():
                         #   If the option is selected, bot wait for trading_is_on == True to create a BUY order
                         #
                         
-                        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true' and token['_TRADING_IS_ON'] == True:
-                            printt_info("PRICE HAS MOVED --> trading is enabled --> Bot will buy")
-                            pass
-                        
-                        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true' and token['_TRADING_IS_ON'] == False:
-                            printt("Waiting for price to move for token:", token['SYMBOL'])
-                            continue
-                        
+                        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'mempool':
+                            printt("-----------------------------------------------------------------------------------------------------------------------------", write_to_log=True)
+                            printt("WAIT_FOR_OPEN_TRADE = mempool --> Bot will scan mempool to detect Open Trade functions called", write_to_log=True)
+                            printt(" ")
+                            printt_err("WE NEED YOUR HELP FOR THAT:")
+                            printt_err("To make WAIT_FOR_OPEN_TRADE work, we need to enter in the code the functions used by the teams to make trading open:")
+                            printt(" ")
+                            printt("Please give us some examples of function used here:", write_to_log=True)
+                            printt("https://github.com/tsarbuig/LimitSwap/issues/1", write_to_log=True)
+                            printt(" ")
+                            printt("------------------------------------------------------------------------------------------------------------------------------", write_to_log=True)
+    
+                            wait_for_open_trade(token['ADDRESS'])
+
+                        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true':
+                            printt("-----------------------------------------------------------------------------------------------------------------------------")
+                            printt("WAIT_FOR_OPEN_TRADE = true --> Bot will wait for price to move before making a BUY order")
+                            printt(" ")
+                            printt_err("BE CAREFUL:")
+                            printt_err("to make WAIT_FOR_OPEN_TRADE work, you need to snipe on the same liquidity pair that liquidity added by the team:")
+                            printt(" ")
+                            printt("Example : If you try to snipe in BUSD and liquidity is in BNB, price will move because of price movement between BUSD and BNB")
+                            printt("--> if liquidity is in BNB or ETH, use LIQUIDITYINNATIVETOKEN = true and USECUSTOMBASEPAIR = false")
+                            printt(" ")
+                            printt("------------------------------------------------------------------------------------------------------------------------------")
+
+                            if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true' and token['_TRADING_IS_ON'] == True:
+                                printt_info("PRICE HAS MOVED --> trading is enabled --> Bot will buy")
+                                pass
+
+                            if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true' and token['_TRADING_IS_ON'] == False:
+                                printt("Waiting for price to move for token:", token['SYMBOL'])
+                                continue
+                                
                         #
                         # PURCHASE POSITION
                         #   If we've passed all checks, attempt to purchase the token
@@ -3942,7 +3955,6 @@ def run():
             reload_bot_settings(bot_settings)
             run()
         printt_err("ERROR. Please go to /log folder and open your logs : you will find more details.")
-        logging.exception(ee)
         logger1.exception(ee)
         sleep(10)
         print("Restarting LimitSwap")
@@ -3989,8 +4001,7 @@ try:
         cooldown = 6
         run()
     else:
-        printt_err(
-            "10 - 50 LIMIT tokens needed to use this bot, please visit the LimitSwap.com for more info or buy more tokens on Uniswap to use!")
+        printt_err("10 - 50 LIMIT tokens needed to use this bot, please visit the LimitSwap.com for more info or buy more tokens on Uniswap to use!")
 
 except Exception as e:
     printt_err("ERROR. Please go to /log folder and open your logs: you will find more details.")
