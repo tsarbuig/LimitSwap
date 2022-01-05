@@ -2066,7 +2066,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
     if outToken != weth:
         printt_debug("ENTER check_precise_price condition 1")
         # First step : calculates the price of token in ETH/BNB
-        pair_address = fetch_pair(inToken, outToken,factoryContract)
+        pair_address = fetch_pair(inToken, weth,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
 
