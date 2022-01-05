@@ -1803,23 +1803,23 @@ def check_balance(address, symbol='UNKNOWN_TOKEN', display_quantity=True):
     printt_debug("EXIT: check_balance()")
     return balance
 
-
-def fetch_pair(inToken, outToken):
+@cache
+def fetch_pair(inToken, outToken,contract):
     print(timestamp(), "Fetching Pair Address")
-    pair = factoryContract.functions.getPair(inToken, outToken).call()
+    pair = contract.functions.getPair(inToken, outToken).call()
     print(timestamp(), "Pair Address = ", pair)
     return pair
 
 
 def sync(inToken, outToken):
-    pair = factoryContract.functions.getPair(inToken, outToken).call()
+    pair = fetch_pair(inToken, outToken,factoryContract)
     syncContract = client.eth.contract(address=Web3.toChecksumAddress(pair), abi=lpAbi)
     sync = syncContract.functions.sync().call()
 
 
 def check_pool(inToken, outToken, symbol, DECIMALS_IN, DECIMALS_OUT):
     # This function is made to calculate Liquidity of a token
-    pair_address = factoryContract.functions.getPair(inToken, outToken).call()
+    pair_address = fetch_pair(inToken, outToken,factoryContract)
     pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
     reserves = pair_contract.functions.getReserves().call()
     printt_debug("ENTER check_pool")
@@ -2066,7 +2066,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
     if outToken != weth:
         printt_debug("ENTER check_precise_price condition 1")
         # First step : calculates the price of token in ETH/BNB
-        pair_address = factoryContract.functions.getPair(inToken, weth).call()
+        pair_address = fetch_pair(inToken, outToken,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
 
@@ -2081,7 +2081,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
         
         # ------------------------------------------------------------------------
         # Second step : calculates the price of Custom Base pair in ETH/BNB
-        pair_address = factoryContract.functions.getPair(outToken, weth).call()
+        pair_address = fetch_pair(inToken, outToken,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
 
@@ -2107,7 +2107,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
         printt_debug("ENTER check_precise_price condition 2")
         # USECUSTOMBASEPAIR = true and token put in BASEADDRESS is WBNB / WETH (because outToken == weth)
         # or USECUSTOMBASEPAIR = false
-        pair_address = factoryContract.functions.getPair(inToken, weth).call()
+        pair_address = fetch_pair(inToken, outToken,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
         
