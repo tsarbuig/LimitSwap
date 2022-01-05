@@ -2081,7 +2081,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
         
         # ------------------------------------------------------------------------
         # Second step : calculates the price of Custom Base pair in ETH/BNB
-        pair_address = fetch_pair(inToken, outToken,factoryContract)
+        pair_address = fetch_pair( outToken,weth,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
 
@@ -2107,7 +2107,7 @@ def check_precise_price(inToken, outToken, symbol, base, custom, routing, buypri
         printt_debug("ENTER check_precise_price condition 2")
         # USECUSTOMBASEPAIR = true and token put in BASEADDRESS is WBNB / WETH (because outToken == weth)
         # or USECUSTOMBASEPAIR = false
-        pair_address = fetch_pair(inToken, outToken,factoryContract)
+        pair_address = fetch_pair(inToken, weth,factoryContract)
         pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
         reserves = pair_contract.functions.getReserves().call()
         
