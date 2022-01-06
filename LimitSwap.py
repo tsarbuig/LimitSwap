@@ -960,8 +960,7 @@ if settings['EXCHANGE'].lower() == 'pancakeswaptestnet':
         my_provider = settings['CUSTOMNODE']
         print(timestamp(), 'Using custom node.')
     else:
-        #my_provider = "https://data-seed-prebsc-1-s2.binance.org:8545"
-        my_provider = "https://speedy-nodes-nyc.moralis.io/05faf9529ba1d0c987ecc96f/bsc/testnet"
+        my_provider = "https://data-seed-prebsc-1-s2.binance.org:8545"
     if not my_provider:
         print(timestamp(), 'Custom node empty. Exiting')
         exit(1)
