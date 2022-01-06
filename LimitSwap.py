@@ -16,6 +16,13 @@ import requests
 import cryptocode, re, pwinput
 import argparse
 import signal
+import apprise
+
+def envia(texto):
+    if settings.get('APPRISE'):
+        app=apprise.Apprise()
+        app.add(settings['APPRISE'])
+        app.notify(body=texto,title="Limiteri")
 
 
 # DEVELOPER CONSIDERATIONS
@@ -279,11 +286,11 @@ def printt_sell_price(token_dict, token_price):
     printt_debug("_PREVIOUS_QUOTE :", token_dict['_PREVIOUS_QUOTE'], "for token:", token_dict['SYMBOL'])
     
     if token_dict['USECUSTOMBASEPAIR'] == 'false':
-        price_message = token_dict['SYMBOL'] + " Price: " + "{0:.24f}".format(token_price) + " " + base_symbol + " - Buy:" + str(token_dict['BUYPRICEINBASE'])
+        price_message = token_dict['SYMBOL'] + " Price: " + "{0:.24f}".format(token_price) + " " + base_symbol + " - Buy:" + str(token_dict['_BUYPRICEINBASE'])
     
     else:
         price_message = token_dict['SYMBOL'] + " Price:" + "{0:.24f}".format(token_price) + " " + token_dict[
-            'BASESYMBOL'] + " - Buy:" + str(token_dict['BUYPRICEINBASE'])
+            'BASESYMBOL'] + " - Buy:" + str(token_dict['_BUYPRICEINBASE'])
     
     price_message = price_message + " Sell:" + str(token_dict['SELLPRICEINBASE']) + " Stop:" + str(
         token_dict['STOPLOSSPRICEINBASE'])
@@ -575,7 +582,12 @@ def load_tokens_file(tokens_path, load_message=True):
     }
     
     for token in tokens:
-        
+        #to paint the price
+        if token.get('TOKENS_BUY_PRICE'):
+            token['_BUYPRICEINBASE'] = token['TOKENS_BUY_PRICE']
+        else:
+            token['_BUYPRICEINBASE'] = token['BUYPRICEINBASE']
+        token['_gasc'] = token['GAS']
         # Keys that must be set
         for required_key in required_user_settings:
             if required_key not in token:
@@ -748,7 +760,12 @@ def reload_tokens_file(tokens_path, load_message=True):
     }
     
     for token in tokens:
-        
+        #to paint the price
+        if token.get('TOKENS_BUY_PRICE'):
+            token['_BUYPRICEINBASE'] = token['TOKENS_BUY_PRICE']
+        else:
+            token['_BUYPRICEINBASE'] = token['BUYPRICEINBASE']
+        token['_gasc'] = token['GAS']
         # Keys that must be set
         for required_key in required_user_settings:
             if required_key not in token:
@@ -943,8 +960,8 @@ if settings['EXCHANGE'].lower() == 'pancakeswaptestnet':
         my_provider = settings['CUSTOMNODE']
         print(timestamp(), 'Using custom node.')
     else:
-        my_provider = "https://data-seed-prebsc-1-s2.binance.org:8545"
-    
+        #my_provider = "https://data-seed-prebsc-1-s2.binance.org:8545"
+        my_provider = "https://speedy-nodes-nyc.moralis.io/05faf9529ba1d0c987ecc96f/bsc/testnet"
     if not my_provider:
         print(timestamp(), 'Custom node empty. Exiting')
         exit(1)
@@ -1417,6 +1434,25 @@ interpretations = {
 }
 
 
+def compare_price(price,precios,quantitys,gases,expero):
+    return compare_price(price,precios,quantitys,gases,expero,0)
+
+def compare_price(price,precios,quantitys,gases,expero,index=0):
+    if index>=len(precios):
+        return False,0,0,0
+    check=Decimal(precios[index])
+    #print (""+str(price)+":"+str(check)+":"+str(price<check))
+    if (price<check):
+        ok,precio,cantidad,gas=compare_price(price,precios,quantitys,gases,expero,index+1)
+        if (ok):
+            return ok,precio,cantidad,gas
+        else:
+            return True,quantitys[index],expero[index],gases[index]
+    else:
+        return False,0,0,0
+
+
+
 def save_settings(settings, pwd):
     if len(pwd) > 0:
         encrypted_settings = settings.copy()
@@ -1706,6 +1742,7 @@ def approve(address, amount):
         printt_err(
             "You have less than 0.05 ETH or 0.01 BNB/FTM/MATIC/etc. token in your wallet, bot needs more to cover fees : please add some more in your wallet")
         sleep(10)
+        envia("LOW MONEY")
         sys.exit()
 
 
@@ -1913,6 +1950,7 @@ def wait_for_open_trade(token):
         except Exception as e:
             printt_err("wait_for_open_trade finished in Error. Please report it to LimitSwap team")
             logger1.exception(e)
+            envia("wait_for_open_trade finished")
             sys.exit()
 
 
@@ -2179,6 +2217,7 @@ def calculate_base_balance(token):
     except Exception as e:
         printt_err("ERROR with your node : please check logs.", write_to_log=True)
         logger1.exception(e)
+        envia("error with node")
         sys.exit()
 
     if eth_balance < minimumbalance:
@@ -2191,12 +2230,14 @@ def calculate_base_balance(token):
     if token['USECUSTOMBASEPAIR'].lower() == 'false':
         token['_BASE_BALANCE'] = Web3.fromWei(check_bnb_balance(), 'ether')
         printt_debug("balance 2951 case1:", token['_BASE_BALANCE'])
+        token['_TOTAL_BALANCE'] = token['_BASE_BALANCE']
     else:
         address = Web3.toChecksumAddress(token['BASEADDRESS'])
         DECIMALS = decimals(address)
         balance_check = check_balance(token['BASEADDRESS'], token['BASESYMBOL'])
         token['_CUSTOM_BASE_BALANCE'] = balance_check / DECIMALS
         printt_debug("balance 2959 case2:", token['_CUSTOM_BASE_BALANCE'])
+        token['_TOTAL_BALANCE'] = token['_CUSTOM_BASE_BALANCE']
 
 
 def calculate_gas(token):
@@ -2228,13 +2269,13 @@ def calculate_gas(token):
         printt_info("Transaction will be created with gas =", token['_GAS_TO_USE'])
     
     else:
-        token['_GAS_TO_USE'] = int(token['GAS'])
+        token['_GAS_TO_USE'] = int(token['_gasc'])
     
     printt_debug("EXIT: calculate_gas()")
     return 0
 
 
-def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit, gaspriority, routing, custom, slippage, DECIMALS):
+def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit, gaspriority, routing, custom, slippage, DECIMALS,quantity):
     # Function: make_the_buy
     # --------------------
     # creates BUY order with the good condition
@@ -2272,11 +2313,15 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit
             printt_err("You have selected LIQUIDITYINNATIVETOKEN = false , so you must choose USECUSTOMBASEPAIR = true")
             printt_err("Please read Wiki carefully, it's very important you can lose money!!")
             sleep(10)
+            envia("Error  LIQUIDITYINNATIVETOKEN = false , so you must choose USECUSTOMBASEPAIR = true")
             sys.exit()
         else:
             # LIQUIDITYINNATIVETOKEN = true
             # USECUSTOMBASEPAIR = false
-            amount_out = routerContract.functions.getAmountsOut(amount, [weth, outToken]).call()[-1]
+            if quantity>0:
+                amount_out=quantity
+            else:
+                amount_out = routerContract.functions.getAmountsOut(amount, [weth, outToken]).call()[-1]
             if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
                 amountOutMin = 100
             else:
@@ -2400,7 +2445,10 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit
         if inToken == weth:
             # USECUSTOMBASEPAIR = true
             # but user chose to put WETH or WBNB contract as CUSTOMBASEPAIR address
-            amount_out = routerContract.functions.getAmountsOut(amount, [weth, outToken]).call()[-1]
+            if quantity>0:
+                amount_out=quantity
+            else:
+                amount_out = routerContract.functions.getAmountsOut(amount, [weth, outToken]).call()[-1]
             if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
                 amountOutMin = 100
             else:
@@ -2454,7 +2502,10 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit
                 printt_info("YOU ARE TRADING WITH VERY BIG AMOUNT, BE VERY CAREFUL YOU COULD LOSE MONEY!!! TEAM RECOMMEND NOT TO DO THAT")
             
             if routing.lower() == 'true':
-                amount_out = routerContract.functions.getAmountsOut(amount, [inToken, weth, outToken]).call()[-1]
+                if quantity>0:
+                    amount_out=quantity
+                else:
+                    amount_out = routerContract.functions.getAmountsOut(amount, [inToken, weth, outToken]).call()[-1]
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
                     amountOutMin = 100
                 else:
@@ -2498,6 +2549,9 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit
                         deadline
                     ).buildTransaction({
                         'gasPrice': Web3.toWei(gas, 'gwei'),
+                    
+                    
+                    
                         'gas': gaslimit,
                         'from': Web3.toChecksumAddress(walletused),
                         'nonce': client.eth.getTransactionCount(walletused)
@@ -2518,7 +2572,10 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount_to_buy, gas, gaslimit
                     printt_info(
                         "YOU ARE TRADING WITH VERY BIG AMOUNT, BE VERY CAREFUL YOU COULD LOSE MONEY!!! TEAM RECOMMEND NOT TO DO THAT")
                 
-                amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
+                if quantity>0:
+                    amount_out=quantity
+                else:
+                    amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
                     amountOutMin = 100
                 else:
@@ -2633,6 +2690,7 @@ def make_the_buy_exact_tokens(inToken, outToken, buynumber, pwd, amountOut, gas,
             printt_err("You have selected LIQUIDITYINNATIVETOKEN = false , so you must choose USECUSTOMBASEPAIR = true")
             printt_err("Please read Wiki carefully, it's very important you can lose money!!")
             sleep(10)
+            envia("Error  LIQUIDITYINNATIVETOKEN = false , so you must choose USECUSTOMBASEPAIR = true")
             sys.exit()
         else:
             # LIQUIDITYINNATIVETOKEN = true
@@ -3071,12 +3129,14 @@ def buy(token_dict, inToken, outToken, pwd):
     #
     # WARNING: BALANCE CHECK HAS BEEN REMOVED FROM buy() - THIS SHOULD BE IMPLEMENTED IN ANOTHER FUCTION
     #
-    
+    #token['_quantity']=0 #this is to ask contract for how many per the quantity to spend
+    #token['_how_many'] = token['BUYAMOUNTINBASE']
+    #token['_gasc']= token['GAS']
     printt_debug("ENTER buy()")
-    
+    quantity = Decimal(token_dict['_quantity'])
     # Map variables until all code is cleaned up.
-    amount = token_dict['BUYAMOUNTINBASE']
-    gas = token_dict['GAS']
+    amount = token_dict['_how_many']
+    gas = token_dict['_gasc']
     slippage = token_dict['SLIPPAGE']
     gaslimit = token_dict['GASLIMIT']
     boost = token_dict['BOOSTPERCENT']
@@ -3115,7 +3175,7 @@ def buy(token_dict, inToken, outToken, pwd):
         printt_info("Bot will wait", token_dict['BUYAFTER_XXX_SECONDS'], " seconds before buy, as you entered in BUYAFTER_XXX_SECONDS parameter")
         sleep(token_dict['BUYAFTER_XXX_SECONDS'])
     
-    printt("Placing New Buy Order for " + token_dict['SYMBOL'])
+    printt("Placing New Buy Order for " + token_dict['SYMBOL'] + " "+ str(token_dict['_QUOTE'])+ " "+str(token_dict['_how_many']) + " "+str(token_dict['_quantity'])) 
     
     if int(gaslimit) < 250000:
         printt_info( "Your GASLIMIT parameter is too low : LimitSwap has forced it to 300000 otherwise your transaction would fail for sure. We advise you to raise it to 1000000.")
@@ -3150,16 +3210,17 @@ def buy(token_dict, inToken, outToken, pwd):
                     if token_dict['KIND_OF_SWAP'] == 'tokens':
                         make_the_buy_exact_tokens(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS)
                     else:
-                        make_the_buy(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS)
+                        make_the_buy(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS,quantity)
                     buynumber += 1
                 else:
                     printt_ok("All BUYS orders have been sent - Stopping Bot")
+                    envia("STOP ALL BUYS DONE")
                     sys.exit(0)
         else:
             if token_dict['KIND_OF_SWAP'] == 'tokens':
                 tx_hash = make_the_buy_exact_tokens(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS)
             else:
-                tx_hash = make_the_buy(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS)
+                tx_hash = make_the_buy(inToken, outToken, buynumber, pwd, amount, token_dict['_GAS_TO_USE'], gaslimit, gaspriority, routing, custom, slippage, DECIMALS,quantity)
     
             return tx_hash
     
@@ -3896,7 +3957,7 @@ def run():
             calculate_base_balance(token)
             
             # Calculate how much gas we should use for this token
-            calculate_gas(token)
+            #calculate_gas(token) asked to buy?
             
             # Call of RugDoc API if parameter is set to True
             if token['RUGDOC_CHECK'] == 'true':
@@ -4002,14 +4063,23 @@ def run():
                     # added the condition "if token['_PREVIOUS_QUOTE'] != 0" to avoid having a green line in first position and make trading_is_on work
                     if token['_PREVIOUS_QUOTE'] != 0 and token['_QUOTE'] != 0:  # and token['_REACHED_MAX_TOKENS'] == False:
                         printt_buy_price(token, token['_QUOTE'])
-                    
+                    quote = token['_QUOTE']
                     #
                     # BUY CHECK
                     #   If the liquidity check has returned a quote that is less than our BUYPRICEINBASE and we haven't informrmed
                     #   the user that we've reached the maximum number of tokens, check for other criteria to buy.
                     #
-                    
-                    if token['_QUOTE'] != 0 and token['_QUOTE'] < Decimal(token['BUYPRICEINBASE']) and token['_REACHED_MAX_SUCCESS_TX'] == False and token['_REACHED_MAX_TOKENS'] == False:
+                    #Lets calculate price < buy price in base
+                    buy_ok = False
+                    if token.get('TOKENS_QUANTITY'):
+                        buy_ok,token['_how_many'],token['_quantity'],token['_gasc']=compare_price(quote,token['TOKENS_BUY_PRICE'],token['TOKENS_BUY_AMOUNT_INBASE'],token['TOKENS_GAS_PRICE'],token['TOKENS_QUANTITY'], 0)
+                    else:
+                        buy_ok=token['_QUOTE'] < Decimal(token['BUYPRICEINBASE'])
+                        token['_quantity']=0 #this is to ask contract for how many per the quantity to spend
+                        token['_how_many'] = token['BUYAMOUNTINBASE']
+                        token['_gasc']= token['GAS']
+                    if token['_QUOTE'] != 0 and buy_ok and token['_REACHED_MAX_SUCCESS_TX'] == False and token['_REACHED_MAX_TOKENS'] == False:
+                    #if token['_QUOTE'] != 0 and token['_QUOTE'] < Decimal(token['BUYPRICEINBASE']) and token['_REACHED_MAX_SUCCESS_TX'] == False and token['_REACHED_MAX_TOKENS'] == False:
                         
                         #
                         # OPEN TRADE CHECK
@@ -4062,7 +4132,7 @@ def run():
                         printt_debug("===========================================")
                         
                         log_price = "{:.18f}".format(token['_QUOTE'])
-                        logging.info("Buy Signal Found @" + str(log_price))
+                        logging.info("Buy Signal Found @" + str(log_price) +" "+ token['SYMBOL'])
                         printt_ok("-----------------------------------------------------------")
                         printt_ok("Buy Signal Found =-= Buy Signal Found =-= Buy Signal Found ")
                         printt_ok("-----------------------------------------------------------")
@@ -4097,7 +4167,7 @@ def run():
                                 printt_err("- SLIPPAGE too low", write_to_log=False)
                                 printt_err("- your node is not working well", write_to_log=False)
                                 printt_err("-------------------------------", write_to_log=False)
-
+                                envia("Error tx "+token['SYMBOL'])
                                 # increment _FAILED_TRANSACTIONS amount
                                 token['_FAILED_TRANSACTIONS'] += 1
                                 printt_debug("3813 _FAILED_TRANSACTIONS:", token['_FAILED_TRANSACTIONS'])
@@ -4107,7 +4177,7 @@ def run():
                                 printt_ok("SUCCESS : your Tx is confirmed    ", write_to_log=True)
                                 # Re-calculate balances after buy()
                                 calculate_base_balance(token)
-                                
+                                envia("BUY ok "+token['SYMBOL'] + " "+str(log_price)+" "+ str(token['_TOTAL_BALANCE'])+ " "+str(token['_how_many'])) 
                                 # increment _SUCCESS_TRANSACTIONS amount
                                 token['_SUCCESS_TRANSACTIONS'] += 1
                                 printt_debug("3840 _SUCCESS_TRANSACTIONS:", token['_SUCCESS_TRANSACTIONS'])
@@ -4215,7 +4285,7 @@ def run():
                                 printt_ok("SUCCESS : your Tx is confirmed    ", write_to_log=True)
                                 # Re-calculate balances after buy()
                                 calculate_base_balance(token)
-
+                                envia("SELL ok "+token['SYMBOL'] + " "+str(log_price)+" "+ + token['_TOTAL_BALANCE']) 
                                 # increment _SUCCESS_TRANSACTIONS amount
                                 token['_SUCCESS_TRANSACTIONS'] += 1
                                 printt_debug("3900 _SUCCESS_TRANSACTIONS:", token['_SUCCESS_TRANSACTIONS'])
@@ -4281,7 +4351,7 @@ try:
     true_balance = auth()
     # Check for version
     #
-    version = '4.0.3'
+    version = '4.0.2'
     printt("YOUR BOT IS CURRENTLY RUNNING VERSION ", version, write_to_log=True)
     check_release()
     
