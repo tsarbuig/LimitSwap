@@ -17,6 +17,7 @@ import cryptocode, re, pwinput
 import argparse
 import signal
 from multiprocessing import Process
+import threading
 
 
 # DEVELOPER CONSIDERATIONS
@@ -4111,12 +4112,14 @@ def run():
                         if token['WAIT_FOR_OPEN_TRADE'].lower() == 'movement':
                             wait_for_open_trade_price_movement(token)
                         
-                        # if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true':
-                        #
-                        #     if __name__ == '__main__':
-                        #         Process(target=wait_for_open_trade_price_movement(token)).start()
-                        #         Process(target=wait_for_open_trade_mempool(token)).start()
-
+                        if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true':
+                            if __name__ == '__main__':
+                                p1 = threading.Thread(target=wait_for_open_trade_mempool(token))
+                                p1.start()
+                                p2 = threading.Thread(target=wait_for_open_trade_price_movement(token))
+                                p2.start()
+                                p1.join()
+                                p2.join()
 
                         #
                         # PURCHASE POSITION
