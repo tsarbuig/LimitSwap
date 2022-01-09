@@ -255,7 +255,7 @@ def printt_repeating(token_dict, message, print_frequency=500):
     
     global repeated_message_quantity
     
-    if message == token_dict['_LAST_MESSAGE'] and bot_settings['VERBOSE_PRICING'] == 'false' and print_frequency >= repeated_message_quantity:
+    if message == token_dict['_LAST_MESSAGE'] and settings['VERBOSE_PRICING'] == 'false' and print_frequency >= repeated_message_quantity:
         bot_settings['_NEED_NEW_LINE'] = False
         repeated_message_quantity += 1
     else:
@@ -290,7 +290,7 @@ def printt_sell_price(token_dict, token_price):
     price_message = price_message + " ATH:" + "{0:.24f}".format(
         token_dict['_ALL_TIME_HIGH']) + " ATL:" + "{0:.24f}".format(token_dict['_ALL_TIME_LOW'])
     
-    if price_message == token_dict['_LAST_PRICE_MESSAGE'] and bot_settings['VERBOSE_PRICING'] == 'false':
+    if price_message == token_dict['_LAST_PRICE_MESSAGE'] and settings['VERBOSE_PRICING'] == 'false':
         bot_settings['_NEED_NEW_LINE'] = False
     elif token_price > token_dict['_PREVIOUS_QUOTE']:
         printt_ok(price_message)
