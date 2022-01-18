@@ -1070,13 +1070,21 @@ if settings['EXCHANGE'] == 'pancakeswap':
     
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading Smart Contracts...")
@@ -1101,7 +1109,7 @@ if settings['EXCHANGE'] == 'pancakeswap':
                                  'USDC':{ 'address': '0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d', 'multiplier' : 0}}
 
 if settings['EXCHANGE'].lower() == 'pancakeswaptestnet':
-    
+
     if settings['USECUSTOMNODE'].lower() == 'true':
         my_provider = settings['CUSTOMNODE']
         print(timestamp(), 'Using custom node.')
@@ -1114,14 +1122,22 @@ if settings['EXCHANGE'].lower() == 'pancakeswaptestnet':
     
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
-    
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '97'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC TEST chain.')
+        exit(1)
+
     print(timestamp(), "Binance Smart Chain testnet Connected =", client.isConnected())
     print(timestamp(), "Loading Smart Contracts...")
     
@@ -1157,13 +1173,21 @@ if settings['EXCHANGE'].lower() == 'traderjoe':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '43114'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an AVAX chain.')
+        exit(1)
 
     print(timestamp(), "AVAX Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading Smart Contracts...")
@@ -1194,13 +1218,21 @@ if settings["EXCHANGE"] == 'pangolin':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '43114'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an AVAX chain.')
+        exit(1)
 
     print(timestamp(), "AVAX Chain Connected =", client.isConnected())
     print(timestamp(), "Loading Smart Contracts...")
@@ -1229,14 +1261,22 @@ if settings['EXCHANGE'] == 'pinkswap':
     
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
-    
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
+
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading PinkSwap Smart Contracts...")
     
@@ -1269,14 +1309,22 @@ if settings['EXCHANGE'] == 'biswap':
     
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
-    
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
+
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading BiSwap Smart Contracts...")
     
@@ -1308,13 +1356,21 @@ elif settings['EXCHANGE'].lower() == 'babyswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading BabySwap Smart Contracts...")
@@ -1347,13 +1403,21 @@ if settings['EXCHANGE'] == 'bakeryswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading BakerySwap Smart Contracts...")
@@ -1385,13 +1449,21 @@ if settings['EXCHANGE'] == 'apeswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '56'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an BSC chain.')
+        exit(1)
 
     print(timestamp(), "Binance Smart Chain Connected =", client.isConnected())
     print(timestamp(), "Loading ApeSwap Smart Contracts...")
@@ -1424,16 +1496,24 @@ elif settings["EXCHANGE"] == 'uniswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
 
-    print(timestamp(), "Uniswap Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    settings['_CHAINID'] = '1'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an Ethereum chain.')
+        exit(1)
+
+    print(timestamp(), "Ethereum Chain Connected =", client.isConnected())
+    print(timestamp(), "Loading Uniswap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
     factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
@@ -1459,16 +1539,24 @@ elif settings["EXCHANGE"] == 'uniswaptestnet':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
 
-    print(timestamp(), "Uniswap Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    settings['_CHAINID'] = '4'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an Ethereum Testnet chain.')
+        exit(1)
+
+    print(timestamp(), "Ethereum Testnet Chain Connected =", client.isConnected())
+    print(timestamp(), "Loading Uniswap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
     factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
@@ -1490,13 +1578,21 @@ elif settings["EXCHANGE"] == 'kuswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '321'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an KCC chain.')
+        exit(1)
 
     print(timestamp(), "Kucoin Chain Connected =", client.isConnected())
     print(timestamp(), "Loading KuSwap Smart Contracts...")
@@ -1524,13 +1620,21 @@ elif settings["EXCHANGE"] == 'koffeeswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '321'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an KCC chain.')
+        exit(1)
 
     print(timestamp(), "Kucoin Chain Connected =", client.isConnected())
     print(timestamp(), "Loading KoffeeSwap Smart Contracts...")
@@ -1557,16 +1661,24 @@ elif settings["EXCHANGE"] == 'spookyswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '250'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an FANTOM chain.')
+        exit(1)
 
     print(timestamp(), "FANTOM Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    print(timestamp(), "Loading SpookySwap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0xF491e7B69E4244ad4002BC14e878a34207E38c29")
     factoryAddress = Web3.toChecksumAddress("0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
@@ -1590,16 +1702,24 @@ elif settings["EXCHANGE"] == 'spiritswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '250'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an FANTOM chain.')
+        exit(1)
 
     print(timestamp(), "FANTOM Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    print(timestamp(), "Loading SpiritSwap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0x16327E3FbDaCA3bcF7E38F5Af2599D2DDc33aE52")
     factoryAddress = Web3.toChecksumAddress("0xEF45d134b73241eDa7703fa787148D9C9F4950b0")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
@@ -1624,16 +1744,24 @@ elif settings["EXCHANGE"] == 'quickswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '137'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an Matic chain.')
+        exit(1)
 
     print(timestamp(), "Matic Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    print(timestamp(), "Loading QuickSwap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff")
     factoryAddress = Web3.toChecksumAddress("0x5757371414417b8c6caad45baef941abc7d3ab32")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
@@ -1658,16 +1786,24 @@ elif settings["EXCHANGE"] == 'waultswap':
 
     if my_provider[0].lower() == 'h':
         print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
+        rpc_provider = Web3.HTTPProvider(my_provider)
     elif my_provider[0].lower() == 'w':
         print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
+        rpc_provider = Web3.WebsocketProvider(my_provider)
     else:
         print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
+        rpc_provider = Web3.IPCProvider(my_provider)
+
+    settings['_CHAINID'] = '137'
+    client = Web3(rpc_provider)
+    chain_id = client.eth.chain_id
+    printt_debug('Chain ID:', client.eth.chain_id)
+    if int(settings['_CHAINID']) is not chain_id:
+        printt_err('The specified CUSTOMNODE is not an Matic chain.')
+        exit(1)
 
     print(timestamp(), "Matic Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
+    print(timestamp(), "Loading WaultSwap Smart Contracts...")
     routerAddress = Web3.toChecksumAddress("0x3a1D87f206D12415f5b0A33E786967680AAb4f6d")
     factoryAddress = Web3.toChecksumAddress("0xa98ea6356A316b44Bf710D5f9b6b4eA0081409Ef")
     routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
