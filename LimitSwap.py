@@ -971,8 +971,11 @@ def list_exchanges(exchange):
     printt('The supported list of exchanges: ')
     for k, v in exchange.items():
         for k1, v1 in v.items():
-            printt('       ' + v1['NAME'] + ' v' + v1['VERSION'] + ' - ' + v1[
-                'CHAIN'] + ': ' + 'EXCHANGE=' + k + ', EXCHANGEVERSION=' + v1['VERSION'])
+            if len(v) == 1:
+                print('       ' + v1['NAME'] + ' - ' + v1['CHAIN'] + ': ' + 'EXCHANGE=' + k)
+            else:
+                print('       ' + v1['NAME'] + ' v' + v1['VERSION'] + ' - ' + v1[
+                    'CHAIN'] + ': ' + 'EXCHANGE=' + k + ', EXCHANGEVERSION=' + v1['VERSION'])
     sys.exit()
 
 """""""""""""""""""""""""""
@@ -1038,12 +1041,14 @@ with open("./exchanges.json", ) as js_file:
     f = jsmin(js_file.read())
 dex_file = json.loads(f)
 
+# Load Dex settings
 if settings['EXCHANGE'] in dex_file:
     if settings['EXCHANGEVERSION'] in dex_file[settings['EXCHANGE']]:
         dex_settings = dex_file[settings['EXCHANGE']][settings['EXCHANGEVERSION']]
     else:
-        printt_debug('Not found exchange version:', settings['EXCHANGEVERSION'])
-        dex_settings = dex_file[settings['EXCHANGE']]['1']
+        if len(dex_file[settings['EXCHANGE']]) == 1:
+            printt_debug('Not found exchange version:', settings['EXCHANGEVERSION'], 'Use v1')
+            dex_settings = dex_file[settings['EXCHANGE']]['1']
 else:
     printt_err('Wrong exchange name:', settings['EXCHANGE'])
 
