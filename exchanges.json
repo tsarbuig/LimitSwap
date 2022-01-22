@@ -1,0 +1,903 @@
+{
+    "pancakeswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "PancakeSwap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
+            "FACTORYADDRESS": "0xbcfccbde45ce874adcb698cc183debcf17952812",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB ",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://pancakeswap.finance/swap",
+            "DEBUG": "False"
+        },
+        "2": {
+            "ENABLED": "True",
+            "NAME": "PancakeSwap",
+            "VERSION": "2",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0x10ED43C718714eb63d5aA57B78B54704E256024E",
+            "FACTORYADDRESS": "0xcA143Ce32Fe78f1f7019d7d551a6402fC5350c73",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB ",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://pancakeswap.finance/swap",
+            "DEBUG": "False"
+        }
+    },
+    "pancakeswaptestnet": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "PancakeSwap Testnet",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain Testnet",
+            "CHAINID": "97",
+            "MY_PROVIDER": "https://data-seed-prebsc-1-s2.binance.org:8545",
+            "ROUTERADDRESS": "0x05fF2B0DB69458A0750badebc4f9e13aDd608C7F",
+            "FACTORYADDRESS": "0xbcfccbde45ce874adcb698cc183debcf17952812",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xae13d989dac2f0debff460ac112a837c89baa7cd",
+            "BASE_SYMBOL": "BNBt",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNBt",
+            "STABLE_BASES": {
+                "BUSD": {
+                    "address": "0x8301f2213c0eed49a7e28ae4c3e91722919b8b47",
+                    "multiplier": 0
+                },
+                "DAI": {
+                    "address": "0x8a9424745056eb399fd19a0ec26a14316684e274",
+                    "multiplier": 0
+                }
+            },
+
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852",
+            "BASEPRICE": 500,
+
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://testnet.bscscan.com/",
+            "URL": "https://pancake.kiemtienonline360.com/#/swap",
+            "DEBUG": "False"
+        },
+        "2": {
+            "ENABLED": "True",
+            "NAME": "PancakeSwap Testnet",
+            "VERSION": "2",
+            "CHAIN": "Binance Smart Chain Testnet",
+            "CHAINID": "97",
+            "MY_PROVIDER": "https://data-seed-prebsc-1-s2.binance.org:8545",
+            "ROUTERADDRESS": "0xD99D1c33F9fC3444f8101754aBC46c52416550D1",
+            "FACTORYADDRESS": "0x6725F303b657a9451d8BA641348b6761A6CC7a17",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xae13d989dac2f0debff460ac112a837c89baa7cd",
+            "BASE_SYMBOL": "BNBt",
+            "BUSD": "",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNBt",
+            "STABLE_BASES": {
+                "BUSD": {
+                    "address": "0x8301f2213c0eed49a7e28ae4c3e91722919b8b47",
+                    "multiplier": 0
+                },
+                "DAI": {
+                    "address": "0x8a9424745056eb399fd19a0ec26a14316684e274",
+                    "multiplier": 0
+                }
+            },
+
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852",
+            "BASEPRICE": 500,
+
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://testnet.bscscan.com/",
+            "URL": "https://pancake.kiemtienonline360.com/#/swap",
+            "DEBUG": "False"
+        }
+    },
+    "traderjoe": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "TraderJoe",
+            "VERSION": "1",
+            "CHAIN": "Avalanche Chain",
+            "CHAINID": "43114",
+            "MY_PROVIDER": "https://api.avax.network/ext/bc/C/rpc",
+            "ROUTERADDRESS": "0x60aE616a2155Ee3d9A68541Ba4544862310933d4",
+            "FACTORYADDRESS": "0x9Ad6C38BE94206cA50bb0d90783181662f0Cfa10",
+            "ROUTERABI": "joeRouter.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+            "BASE_SYMBOL": "AVAX",
+            "RUGDOCCHAIN": "&chain=avax",
+            "MODIFIED": "True",
+            "EXCHANGE_BASE_SYMBOL": "AVAX",
+            "STABLE_BASES": {
+                "MIM ": {
+                    "address": "0x130966628846bfd36ff31a822705796e8cb8c18d",
+                    "multiplier": 0
+                },
+                "USDT": {
+                    "address": "0xc7198437980c041c805a1edcba50c1ce5db95118",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0xe28984e1EE8D431346D32BeC9Ec800Efb643eef4",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://snowtrace.io/",
+            "URL": "https://traderjoexyz.com/#/trade",
+            "DEBUG": "False"
+        }
+	},
+    "pangolin": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "Pangolin",
+            "VERSION": "1",
+            "CHAIN": "Avalanche Chain",
+            "CHAINID": "43114",
+            "MY_PROVIDER": "https://api.avax.network/ext/bc/C/rpc",
+            "ROUTERADDRESS": "0xE54Ca86531e17Ef3616d22Ca28b0D458b6C89106",
+            "FACTORYADDRESS": "0xefa94DE7a4656D787667C749f7E1223D71E9FD88",
+            "ROUTERABI": "pangolin.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
+            "BASE_SYMBOL": "AVAX",
+            "RUGDOCCHAIN": "&chain=avax",
+            "MODIFIED": "True",
+            "EXCHANGE_BASE_SYMBOL": "AVAX",
+            "STABLE_BASES": {
+                "MIM ": {
+                    "address": "0x130966628846bfd36ff31a822705796e8cb8c18d",
+                    "multiplier": 0
+                },
+                "USDT": {
+                    "address": "0xc7198437980c041c805a1edcba50c1ce5db95118",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0xe28984e1EE8D431346D32BeC9Ec800Efb643eef4",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://snowtrace.io/",
+            "URL": "https://app.pangolin.exchange/#/swap",
+            "DEBUG": "False"
+        }
+	},
+    "pinkswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "PinkSwap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0x319EF69a98c8E8aAB36Aea561Daba0Bf3D0fa3ac",
+            "FACTORYADDRESS": "0x7d2ce25c28334e40f37b2a068ec8d5a59f11ea54",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://exchange.pinkswap.finance/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "biswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "BiSwap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0x3a6d8cA21D1CF76F653A67577FA0D27453350dD8",
+            "FACTORYADDRESS": "0x858E3312ed3A876947EA49d572A7C42DE08af7EE",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://exchange.pinkswap.finance/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "babyswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "BabySwap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0x325E343f1dE602396E256B67eFd1F61C3A6B38Bd",
+            "FACTORYADDRESS": "0x86407bEa2078ea5f5EB5A52B2caA963bC1F889Da",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://exchange.babyswap.finance/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "bakeryswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "BakerySwap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0xCDe540d7eAFE93aC5fE6233Bee57E1270D3E330F",
+            "FACTORYADDRESS": "0x01bF7C66c6BD861915CdaaE475042d3c4BaE16A7",
+            "ROUTERABI": "bakeryRouter.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "True",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://www.bakeryswap.org/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "apeswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "Apeswap",
+            "VERSION": "1",
+            "CHAIN": "Binance Smart Chain",
+            "CHAINID": "56",
+            "MY_PROVIDER": "https://bsc-dataseed4.defibit.io",
+            "ROUTERADDRESS": "0xcF0feBd3f17CEf5b47b0cD257aCf6025c5BFf3b7",
+            "FACTORYADDRESS": "0x0841BD0B734E4F5853f0dD8d7Ea041c241fb0Da6",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+            "BASE_SYMBOL": "BNB",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "BNB ",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0x55d398326f99059ff775485246999027b3197955",
+                    "multiplier": 0
+                },
+                "BUSD": {
+                    "address": "0xe9e7cea3dedca5984780bafc599bd69add087d56",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0x8ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://bscscan.com/",
+            "URL": "https://app.apeswap.finance/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "uniswap": {
+        "2": {
+            "ENABLED": "True",
+            "NAME": "UniSwap",
+            "VERSION": "2",
+            "CHAIN": "Ethereum Chain",
+            "CHAINID": "1",
+            "MY_PROVIDER": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+            "ROUTERADDRESS": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+            "FACTORYADDRESS": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+            "BASE_SYMBOL": "ETH",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "ETH",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+                    "multiplier": 0
+                },
+                "USDC": {
+                    "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://etherscan.io/",
+            "URL": "https://app.uniswap.org/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "uniswaptestnet": {
+        "2": {
+            "ENABLED": "True",
+            "NAME": "UniSwap Testnet",
+            "VERSION": "2",
+            "CHAIN": "Ethereum Chain Testnet Ropsten",
+            "CHAINID": "3",
+            "MY_PROVIDER": "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
+            "ROUTERADDRESS": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D",
+            "FACTORYADDRESS": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0xc778417e063141139fce010982780140aa0cd5ab",
+            "BASE_SYMBOL": "ETH",
+            "RUGDOCCHAIN": "&chain=bsc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "ETHt",
+            "STABLE_BASES": {
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x69Ce10FAc9639b8fdd2c8250b35E06f31a453EEB",
+            "BASEPRICE": "3500",
+            "GASPARAMATER": 200, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://ropsten.etherscan.io/",
+            "URL": "",
+            "DEBUG": "False"
+        }	
+	},
+    "kuswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "KuSwap",
+            "VERSION": "1",
+            "CHAIN": "Kucoin Chain",
+            "CHAINID": "321",
+            "MY_PROVIDER": "https://rpc-mainnet.kcc.network",
+            "ROUTERADDRESS": "0xa58350d6dee8441aa42754346860e3545cc83cda",
+            "FACTORYADDRESS": "0xAE46cBBCDFBa3bE0F02F463Ec5486eBB4e2e65Ae",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x4446Fc4eb47f2f6586f9fAAb68B3498F86C07521",
+            "BASE_SYMBOL": "KCS",
+            "RUGDOCCHAIN": "&chain=kcc",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "KCS",
+            "STABLE_BASES": {
+                "USD ": {
+                    "address": "0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x6c31e0F5c07b81A87120cc58c4dcc3fbafb00367",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://explorer.kcc.io/",
+            "URL": "https://kuswap.finance/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "koffeeswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "KoffeeSwap",
+            "VERSION": "1",
+            "CHAIN": "Kucoin Chain",
+            "CHAINID": "321",
+            "MY_PROVIDER": "https://rpc-mainnet.kcc.network",
+            "ROUTERADDRESS": "0xc0fFee0000C824D24E0F280f1e4D21152625742b",
+            "FACTORYADDRESS": "0xC0fFeE00000e1439651C6aD025ea2A71ED7F3Eab",
+            "ROUTERABI": "koffee.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x4446Fc4eb47f2f6586f9fAAb68B3498F86C07521",
+            "BASE_SYMBOL": "KCS",
+            "RUGDOCCHAIN": "&chain=kcc",
+            "MODIFIED": "True",
+            "EXCHANGE_BASE_SYMBOL": "KCS",
+            "STABLE_BASES": {
+                "USD ": {
+                    "address": "0x0039f574ee5cc39bdd162e9a88e3eb1f111baf48",
+                    "multiplier": 0
+                }
+            },
+            "DECIMALS_STABLES": 1000000000000000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x6c31e0F5c07b81A87120cc58c4dcc3fbafb00367",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://explorer.kcc.io/",
+            "URL": "https://koffeeswap.exchange/#/swap",
+            "DEBUG": "False"
+        }	
+	},
+    "spookyswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "SpookySwap",
+            "VERSION": "1",
+            "CHAIN": "FANTOM Chain",
+            "CHAINID": "250",
+            "MY_PROVIDER": "https://rpcapi.fantom.network",
+            "ROUTERADDRESS": "0xF491e7B69E4244ad4002BC14e878a34207E38c29",
+            "FACTORYADDRESS": "0x152eE697f2E276fA89E96742e9bB9aB1F2E61bE3",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
+            "BASE_SYMBOL": "FTM",
+            "RUGDOCCHAIN": "&chain=ftm",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "FTM",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0x04068da6c83afcfa0e13ba15a6696662335d5b75",
+                    "multiplier": 0
+                },
+                "USDT": {
+                    "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x2b4C76d0dc16BE1C31D4C1DC53bF9B45987Fc75c",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://explorer.fantom.network/",
+            "URL": "https://spookyswap.finance/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "protofi": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "ProtoFi",
+            "VERSION": "1",
+            "CHAIN": "FANTOM Chain",
+            "CHAINID": "250",
+            "MY_PROVIDER": "https://rpcapi.fantom.network",
+            "ROUTERADDRESS": "0xF4C587a0972Ac2039BFF67Bc44574bB403eF5235",
+            "FACTORYADDRESS": "0x39720E5Fe53BEEeb9De4759cb91d8E7d42c17b76",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
+            "BASE_SYMBOL": "FTM",
+            "RUGDOCCHAIN": "&chain=ftm",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "FTM",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0x04068da6c83afcfa0e13ba15a6696662335d5b75",
+                    "multiplier": 0
+                },
+                "USDT": {
+                    "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x2b4C76d0dc16BE1C31D4C1DC53bF9B45987Fc75c",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://explorer.fantom.network/",
+            "URL": "https://fantomdex.protofi.app/#/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "spiritswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "SpiritSwap",
+            "VERSION": "1",
+            "CHAIN": "FANTOM Chain",
+            "CHAINID": "250",
+            "MY_PROVIDER": "https://rpcapi.fantom.network",
+            "ROUTERADDRESS": "0x16327E3FbDaCA3bcF7E38F5Af2599D2DDc33aE52",
+            "FACTORYADDRESS": "0xEF45d134b73241eDa7703fa787148D9C9F4950b0",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x21be370d5312f44cb42ce377bc9b8a0cef1a4c83",
+            "BASE_SYMBOL": "FTM",
+            "RUGDOCCHAIN": "&chain=ftm",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "FTM",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0x04068da6c83afcfa0e13ba15a6696662335d5b75",
+                    "multiplier": 0
+                },
+                "USDT": {
+                    "address": "0x049d68029688eabf473097a2fc38ef61633a3c7a",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x2b4C76d0dc16BE1C31D4C1DC53bF9B45987Fc75c",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://explorer.fantom.network/",
+            "URL": "https://swap.spiritswap.finance/#/exchange/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "quickswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "QuickSwap",
+            "VERSION": "1",
+            "CHAIN": "Matic Chain",
+            "CHAINID": "137",
+            "MY_PROVIDER": "https://polygon-rpc.com",
+            "ROUTERADDRESS": "0xa5E0829CaCEd8fFDD4De3c43696c57F7D7A678ff",
+            "FACTORYADDRESS": "0x5757371414417b8c6caad45baef941abc7d3ab32",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+            "BASE_SYMBOL": "MATIC",
+            "RUGDOCCHAIN": "&chain=poly",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "MATIC",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x604229c960e5CACF2aaEAc8Be68Ac07BA9dF81c3",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://polygonscan.com/",
+            "URL": "https://app.uniswap.org/#/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "polygon-apeswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "ApeSwap",
+            "VERSION": "1",
+            "CHAIN": "Matic Chain",
+            "CHAINID": "137",
+            "MY_PROVIDER": "https://polygon-rpc.com",
+            "ROUTERADDRESS": "0xC0788A3aD43d79aa53B09c2EaCc313A787d1d607",
+            "FACTORYADDRESS": "0xCf083Be4164828f00cAE704EC15a36D711491284",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+            "BASE_SYMBOL": "MATIC",
+            "RUGDOCCHAIN": "&chain=poly",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "MATIC",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x604229c960e5CACF2aaEAc8Be68Ac07BA9dF81c3",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://polygonscan.com/",
+            "URL": "https://app.apeswap.finance/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "waultswap": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "WaultSwap",
+            "VERSION": "1",
+            "CHAIN": "Matic Chain",
+            "CHAINID": "137",
+            "MY_PROVIDER": "https://rpc-waultfinance-mainnet.maticvigil.com/v1/0bc1bb1691429f1eeee66b2a4b919c279d83d6b0",
+            "ROUTERADDRESS": "0x3a1D87f206D12415f5b0A33E786967680AAb4f6d",
+            "FACTORYADDRESS": "0xa98ea6356A316b44Bf710D5f9b6b4eA0081409Ef",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+            "BASE_SYMBOL": "MATIC",
+            "RUGDOCCHAIN": "&chain=poly",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "MATIC",
+            "STABLE_BASES": {
+                "USDT": {
+                    "address": "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0x604229c960e5CACF2aaEAc8Be68Ac07BA9dF81c3",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://polygonscan.com/",
+            "URL": "https://swap.wault.finance/polygon/index.html#/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "cronos-vvs": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "VVS Finance",
+            "VERSION": "1",
+            "CHAIN": "Cronos Chain",
+            "CHAINID": "25",
+            "MY_PROVIDER": "https://evm-cronos.crypto.org",
+            "ROUTERADDRESS": "0x145863Eb42Cf62847A6Ca784e6416C1682b1b2Ae",
+            "FACTORYADDRESS": "0x3b44b2a187a7b3824131f8db5a74194d0a42fc15",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23",
+            "BASE_SYMBOL": "CRO",
+            "RUGDOCCHAIN": "&chain=cronos",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "CRO",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0xc21223249ca28397b4b6541dffaecc539bff0c59",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0xe61Db569E231B3f5530168Aa2C9D50246525b6d6",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://cronos.crypto.org/explorer/",
+            "URL": "https://vvs.finance/swap",
+            "DEBUG": "False"
+        }	
+	},		
+    "cronos-meerkat": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "Mad Meerkat",
+            "VERSION": "1",
+            "CHAIN": "Cronos Chain",
+            "CHAINID": "25",
+            "MY_PROVIDER": "https://evm-cronos.crypto.org",
+            "ROUTERADDRESS": "0x145677FC4d9b8F19B5D56d1820c48e0443049a30",
+            "FACTORYADDRESS": "0xd590cC180601AEcD6eeADD9B7f2B7611519544f4",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23",
+            "BASE_SYMBOL": "CRO",
+            "RUGDOCCHAIN": "&chain=cronos",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "CRO",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0xc21223249ca28397b4b6541dffaecc539bff0c59",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0xe61Db569E231B3f5530168Aa2C9D50246525b6d6",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://cronos.crypto.org/explorer/",
+            "URL": "https://mm.finance/swap",
+            "DEBUG": "False"
+        }	
+    },
+    "cronos-crona": {
+        "1": {
+            "ENABLED": "True",
+            "NAME": "CoronaSwap",
+            "VERSION": "1",
+            "CHAIN": "Cronos Chain",
+            "CHAINID": "25",
+            "MY_PROVIDER": "https://evm-cronos.crypto.org",
+            "ROUTERADDRESS": "0xcd7d16fB918511BF7269eC4f48d61D79Fb26f918",
+            "FACTORYADDRESS": "0x73A48f8f521EB31c55c0e1274dB0898dE599Cb11",
+            "ROUTERABI": "router.json",
+            "FACTORYABI": "factory2.json",
+            "WETH": "0x5C7F8A570d578ED84E63fdFA7b1eE72dEae1AE23",
+            "BASE_SYMBOL": "CRO",
+            "RUGDOCCHAIN": "&chain=cronos",
+            "MODIFIED": "False",
+            "EXCHANGE_BASE_SYMBOL": "CRO",
+            "STABLE_BASES": {
+                "USDC": {
+                    "address": "0xc21223249ca28397b4b6541dffaecc539bff0c59",
+                    "multiplier": 0
+                }								
+            },
+            "DECIMALS_STABLES": 1000000, // def calculate_base_price()
+            "DECIMALS_BNB": 1000000000000000000,
+            "PAIR_ADDRESS": "0xe61Db569E231B3f5530168Aa2C9D50246525b6d6",
+            "BASEPRICE": "",
+            "GASPARAMATER": 20, // approve # 200 uniswaptestnet # Estimates GAS price and use a +20% factor
+            "APPROVEGAS": 1000000,
+            "EXPLORER": "https://cronos.crypto.org/explorer/",
+            "URL": "https://app.cronaswap.org/swap",
+            "DEBUG": "False"
+        }	
+    }
+}
