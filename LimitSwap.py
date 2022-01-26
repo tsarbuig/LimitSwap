@@ -2340,17 +2340,17 @@ def approve(address, amount):
         sleep(10)
         sys.exit()
 
-def compare_priceg(price,precios,quantitys,gases,expero):
-    return compare_priceg(price,precios,quantitys,gases,expero,0)
+def compare_priceg(price,prices,quantitys,gases,expero):
+    return compare_priceg(price,prices,quantitys,gases,expero,0)
 
-def compare_priceg(price,precios,quantitys,gases,expero,index=0):
-    if index>=len(precios):
+def compare_priceg(price,prices,quantitys,gases,expero,index=0):
+    if index>=len(prices):
         return False,0,0,0
-    check=Decimal(precios[index])
+    check=Decimal(prices[index])
     if (price<check):
-        ok,precio,cantidad,gas=compare_priceg(price,precios,quantitys,gases,expero,index+1)
+        ok,return_price,return_quantity,gas=compare_priceg(price,prizes,quantitys,gases,expero,index+1)
         if (ok):
-            return ok,precio,cantidad,gas
+            return ok,return_price,return_quantity,gas
         else:
             return True,quantitys[index],expero[index],gases[index]
     else:
@@ -2446,6 +2446,7 @@ def check_balance(address, symbol='UNKNOWN_TOKEN', display_quantity=True):
 
 @lru_cache(maxsize=None)
 def fetch_pair(inToken, outToken, contract):
+<<<<<<< HEAD
     printt_debug("ENTER fetch_pair")
     pair = contract.functions.getPair(inToken, outToken).call()
     printt_debug("Pair Address = ", pair)
@@ -2461,6 +2462,11 @@ def fetch_pair2(inToken, outToken, contract):
         if pair != '0x0000000000000000000000000000000000000000':
             PAIR_HASH[(inToken,outToken)] = pair
     printt_debug("Pair Address = ", pair)
+=======
+    printt_debug(timestamp(), "Fetching Pair Address")
+    pair = contract.functions.getPair(inToken, outToken).call()
+    printt_debug(timestamp(), "Pair Address = ", pair)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     return pair
 
 @lru_cache(maxsize=None)
@@ -2476,13 +2482,18 @@ def getReserves_with_cache(pair_contract):
 
 
 def sync(inToken, outToken):
+<<<<<<< HEAD
     pair = fetch_pair2(inToken, outToken, factoryContract)
+=======
+    pair = fetch_pair(inToken, outToken,factoryContract)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     syncContract = client.eth.contract(address=Web3.toChecksumAddress(pair), abi=lpAbi)
     sync = syncContract.functions.sync().call()
 
 
 def check_pool(inToken, outToken, DECIMALS_OUT):
     # This function is made to calculate Liquidity of a token
+<<<<<<< HEAD
     printt_debug("ENTER check_pool")
     # be careful, we cannot put cache and use fetch_pair, because we need to detect when pair_address != 0x0000000000000000000000000000000000000000
     # pair_address = fetch_pair2(inToken, outToken, factoryContract) --> we don't do that until we're sure
@@ -2497,6 +2508,9 @@ def check_pool(inToken, outToken, DECIMALS_OUT):
         printt_debug("check_pool condition 1 quick exit")
         return 0
     
+=======
+    pair_address = fetch_pair(inToken, outToken,factoryContract)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
     
     reserves = pair_contract.functions.getReserves().call()
@@ -2860,6 +2874,7 @@ def check_liquidity_amount(token, DECIMALS_OUT, DECIMALS_weth):
         printt("Current", token['SYMBOL'], "Liquidity =", "{:.2f}".format(liquidity_amount_in_dollars), "$")
         printt("")
         
+<<<<<<< HEAD
         if float(token['MINIMUM_LIQUIDITY_IN_DOLLARS']) <= float(liquidity_amount_in_dollars):
             printt_ok("MINIMUM_LIQUIDITY_IN_DOLLARS parameter =", int(token['MINIMUM_LIQUIDITY_IN_DOLLARS']), " --> Enough liquidity detected : Buy Signal Found!")
             return 1
@@ -2893,11 +2908,33 @@ def check_liquidity_amount(token, DECIMALS_OUT, DECIMALS_weth):
         #   custom_base_price_in_base = check_precise_price(outToken, weth, token['_WETH_DECIMALS'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
 
         custom_base_price_in_base = calculate_custom_base_price(outToken, DECIMALS_OUT, DECIMALS_weth)
+=======
+        # Case 3 above
+        if token["LIQUIDITYINNATIVETOKEN"] == 'false' and token["USECUSTOMBASEPAIR"] == 'true':
+            outToken = Web3.toChecksumAddress(token['BASEADDRESS'])
+            printt_debug("check_liquidity_amount case 1")
+
+            pool = check_pool(inToken, outToken, token['BASESYMBOL'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+            printt("You have set LIQUIDITYCHECK = true.")
+            printt("Current", token['SYMBOL'], "Liquidity =", int(pool), token['BASESYMBOL'])
+            
+            if float(token['LIQUIDITYAMOUNT']) <= float(pool):
+                printt_ok("LIQUIDITYAMOUNT parameter =", int(token['LIQUIDITYAMOUNT']), " --> Enough liquidity detected : Buy Signal Found!")
+                return 1
+            
+            # This position isn't looking good. Inform the user, disable the token and break out of this loop
+            else:
+                printt_warn("LIQUIDITYAMOUNT parameter =", int(token['LIQUIDITYAMOUNT']), " : not enough liquidity, bot will not buy. Disabling the trade of this token.")
+                token['ENABLED'] = 'false'
+                token['_QUOTE'] = 0
+                return 0
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
 
         # 2/ convert this Custom Base token price in $
         custom_base_price_in_dollars = float(custom_base_price_in_base) * float(token['_BASE_PRICE'])
         liquidity_amount_in_dollars = float(liquidity_amount) * float(custom_base_price_in_dollars)
 
+<<<<<<< HEAD
         printt("Current", token['SYMBOL'], "Liquidity =", "{:.6f}".format(liquidity_amount_in_dollars), "$")
         
         if float(token['MINIMUM_LIQUIDITY_IN_DOLLARS']) <= float(liquidity_amount_in_dollars):
@@ -2918,6 +2955,8 @@ def check_liquidity_amount(token, DECIMALS_OUT, DECIMALS_weth):
             return 0
 
 
+=======
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
 def check_price(inToken, outToken, custom, routing, DECIMALS_IN, DECIMALS_OUT):
     # CHECK GET RATE OF THE TOKEn
     printt_debug("ENTER check_price")
@@ -2963,6 +3002,14 @@ def check_price(inToken, outToken, custom, routing, DECIMALS_IN, DECIMALS_OUT):
 
 
 ORDER_HASH = {}
+<<<<<<< HEAD
+=======
+
+@lru_cache(maxsize=None)
+def getContractLP(pair_address):
+    return client.eth.contract(address=pair_address, abi=lpAbi)
+
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
 def check_precise_price(inToken, outToken, DECIMALS_weth, DECIMALS_IN, DECIMALS_OUT):
     # This function is made to calculate price of a token
     # It was first developed by the user Juan Lopez : thanks a lot :)
@@ -3058,8 +3105,12 @@ def check_precise_price_new(inToken, outToken, DECIMALS_weth, DECIMALS_IN, DECIM
     if outToken != weth:
         printt_debug("ENTER check_precise_price_new condition 1")
         # First step : calculates the price of token in ETH/BNB
+<<<<<<< HEAD
         
         pair_address = fetch_pair2(inToken, weth, factoryContract)
+=======
+        pair_address = fetch_pair(inToken, weth,factoryContract)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
         pair_contract = getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
         
@@ -3074,7 +3125,11 @@ def check_precise_price_new(inToken, outToken, DECIMALS_weth, DECIMALS_IN, DECIM
         
         # ------------------------------------------------------------------------
         # Second step : calculates the price of Custom Base pair in ETH/BNB
+<<<<<<< HEAD
         pair_address = fetch_pair2(outToken, weth, factoryContract)
+=======
+        pair_address = fetch_pair( outToken,weth,factoryContract)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
         pair_contract = getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
 
@@ -3099,7 +3154,11 @@ def check_precise_price_new(inToken, outToken, DECIMALS_weth, DECIMALS_IN, DECIM
         printt_debug("ENTER check_precise_price_new condition 2")
         # USECUSTOMBASEPAIR = true and token put in BASEADDRESS is WBNB / WETH (because outToken == weth)
         # or USECUSTOMBASEPAIR = false
+<<<<<<< HEAD
         pair_address = fetch_pair2(inToken, weth, factoryContract)
+=======
+        pair_address = fetch_pair(inToken, weth,factoryContract)
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
         pair_contract = getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
         
@@ -3129,7 +3188,7 @@ def calculate_base_price():
 
         # BUSD
         pair_address = '0x58F876857a02D6762E0101bb5C46A8c1ED44Dc16'
-        pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
+        pair_contract =  getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
         basePrice = Decimal((reserves[1] / DECIMALS_STABLES) / (reserves[0] / DECIMALS_BNB))
         printt_debug("BNB PRICE: ", "{:.6f}".format(basePrice))
@@ -3149,7 +3208,7 @@ def calculate_base_price():
         # USDT
         pair_address = '0x0d4a11d5EEaaC28EC3F61d100daF4d40471f1852'
         printt_debug("pair_address:", pair_address)
-        pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
+        pair_contract = getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
         basePrice = Decimal((reserves[1] / DECIMALS_STABLES) / (reserves[0] / DECIMALS_ETH))
         printt_debug("ETH PRICE: ", "{:.6f}".format(basePrice))
@@ -3169,7 +3228,7 @@ def calculate_base_price():
         # USDT 0xc7198437980c041c805a1edcba50c1ce5db95118
         pair_address = '0xe28984e1EE8D431346D32BeC9Ec800Efb643eef4'
         printt_debug("pair_address:", pair_address)
-        pair_contract = client.eth.contract(address=pair_address, abi=lpAbi)
+        pair_contract =  getContractLP(pair_address)
         reserves = pair_contract.functions.getReserves().call()
         basePrice = Decimal((reserves[1] / DECIMALS_STABLES) / (reserves[0] / DECIMALS_ETH))
         printt_debug("AVAX PRICE: ", "{:.6f}".format(basePrice))
@@ -4799,7 +4858,11 @@ def sell(token_dict, inToken, outToken):
 
 def benchmark():
     printt_ok('*** Start Benchmark Mode ***', write_to_log=True)
+<<<<<<< HEAD
     printt('This benchmark will use your tokens.json: ADDRESS / LIQUIDITYINNATIVETOKEN / USECUSTOMBASEPAIR / BASEADDRESS')
+=======
+    printt('Benchmark running, we will do 60 tests. Please wait a few seconds...')
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     rounds = 60
     printt("Benchmark running, we will do", rounds,"tests. Please wait a few seconds...")
 
@@ -4829,11 +4892,15 @@ def benchmark():
         
     start_time = time()
     for i in range(rounds):
+<<<<<<< HEAD
         try:
             tmp = check_price(inToken, outToken, token[0]['USECUSTOMBASEPAIR'], token[0]['LIQUIDITYINNATIVETOKEN'], token[0]['_CONTRACT_DECIMALS'], token[0]['_BASE_DECIMALS'])
         except Exception:
             pass
 
+=======
+        tmp = check_price(inToken, outToken, token[0]['USECUSTOMBASEPAIR'], token[0]['LIQUIDITYINNATIVETOKEN'], token[0]['_CONTRACT_DECIMALS'], token[0]['_BASE_DECIMALS'])
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     end_time = time()
     printt('Check_price function     :', round((rounds/(end_time - start_time)), 2), 'query/s Total:', round((end_time - start_time), 2), "s", write_to_log=True)
 
@@ -4841,10 +4908,14 @@ def benchmark():
     i = 0
     start_time = time()
     for i in range(rounds):
+<<<<<<< HEAD
         try:
             tmp = check_precise_price(inToken, outToken, token[0]['_WETH_DECIMALS'], token[0]['_CONTRACT_DECIMALS'], token[0]['_BASE_DECIMALS'])
         except Exception:
             pass
+=======
+        tmp = check_precise_price(inToken, outToken, token[0]['_WETH_DECIMALS'], token[0]['_CONTRACT_DECIMALS'], token[0]['_BASE_DECIMALS'])
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
     end_time = time()
     printt('Check_precise_price func :', round((rounds/(end_time - start_time)), 2), 'query/s Total:', round((end_time - start_time), 2), "s", write_to_log=True)
 
@@ -5035,12 +5106,22 @@ def run():
                     #
                     token['_PREVIOUS_QUOTE'] = token['_QUOTE']
                     
+<<<<<<< HEAD
                     if token['LIQUIDITYINNATIVETOKEN'] == 'true':
                         token['_QUOTE'] = check_precise_price(inToken, outToken, token['_WETH_DECIMALS'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
                     else:
                         # if token['LIQUIDITYINNATIVETOKEN'] == 'false', we need to use check_price, because check_precise_price do not work for now
                         # TODO : improve check_precise_price
                         token['_QUOTE'] = check_price(inToken, outToken, token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+=======
+                    # if --check_precise_price or PRECISE_PRICE parameter is used, bot will use dedicated function
+                    if command_line_args.precise_price or token['PRECISE_PRICE'] == 'true':
+                        token['_QUOTE'] = check_precise_price(inToken, outToken, token['_WETH_DECIMALS'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+                    else:
+                        token['_QUOTE'] = check_price(inToken, outToken, token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+                    
+                    printt_debug("token['_QUOTE'] 3245 :", token['_QUOTE'], "for the token:", token['SYMBOL'])
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
                     
                     if token['_ALL_TIME_HIGH'] == 0 and token['_ALL_TIME_LOW'] == 0:
                         token['_ALL_TIME_HIGH'] = token['_QUOTE']
@@ -5352,7 +5433,10 @@ def run():
                 _TOKENS_saved[token['SYMBOL']] = token
 
             reload_bot_settings(bot_settings)
+<<<<<<< HEAD
             sleep(0.01)
+=======
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
             raise RestartAppError("Restarting LimitSwap")
         else:
             raise
@@ -5396,6 +5480,7 @@ try:
     
     # The LIMIT balance of the user.
     true_balance = auth()
+<<<<<<< HEAD
     
     if true_balance >= 50:
         print(timestamp(), "Professional Subscriptions Active")
@@ -5407,6 +5492,17 @@ try:
             cooldown = 3
         else:
             cooldown = 0.01
+=======
+    # Check for version
+    #
+    version = '4.0.3'
+    printt("YOUR BOT IS CURRENTLY RUNNING VERSION ", version, write_to_log=True)
+    check_release()
+    
+    if true_balance >= 50:
+        print(timestamp(), "Professional Subscriptions Active")
+        cooldown = 0.01
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
         runLoop()
     
     elif true_balance >= 25 and true_balance < 50:
@@ -5436,4 +5532,8 @@ except Exception as e:
         nonce += 1
         sleep(1)
         if nonce > timeout:
+<<<<<<< HEAD
             runLoop()
+=======
+            runLoop()
+>>>>>>> 5f5f6464c245a871b7c5b3b24cd9e56e89613189
