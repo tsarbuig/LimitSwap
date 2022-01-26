@@ -2340,19 +2340,16 @@ def approve(address, amount):
         sleep(10)
         sys.exit()
 
-def compare_priceg(price,prices,quantitys,gases,expero):
-    return compare_priceg(price,prices,quantitys,gases,expero,0)
-
-def compare_priceg(price,prices,quantitys,gases,expero,index=0):
+def compare_priceg(price,prices,quantitys,gases,wanted,index=0):
     if index>=len(prices):
         return False,0,0,0
     check=Decimal(prices[index])
     if (price<check):
-        ok,return_price,return_quantity,gas=compare_priceg(price,prizes,quantitys,gases,expero,index+1)
+        ok,return_price,return_quantity,gas=compare_priceg(price,prizes,quantitys,gases,wanted,index+1)
         if (ok):
             return ok,return_price,return_quantity,gas
         else:
-            return True,quantitys[index],expero[index],gases[index]
+            return True,quantitys[index],wanted[index],gases[index]
     else:
         return False,0,0,0
 
