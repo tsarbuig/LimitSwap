@@ -3393,7 +3393,7 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
             if AAMOUNTS.get(inToken):
                 if AAMOUNTS[inToken] >= 0:
                     printt_debug("set amount out min to" )
-                    amountOutMin = AAMOUNTS[inToken]
+                    amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
                     printt_debug("set amount out min to" , amountOutMin)
             deadline = int(time() + + 60)
             
@@ -3505,7 +3505,7 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
             if AAMOUNTS.get(inToken):
                 if AAMOUNTS[inToken] >= 0:
                     printt_debug("set amount out min to" )
-                    amountOutMin = AAMOUNTS[inToken]
+                    amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
                     printt_debug("set amount out min to" , amountOutMin)
             deadline = int(time() + + 60)
             
@@ -3559,13 +3559,13 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 amount_out = routerContract.functions.getAmountsOut(amount, [inToken, weth, outToken]).call()[-1]
                 
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
+                    amountOutMin = 0
                 else:
                     amountOutMin = int(amount_out * (1 - (slippage / 100)))
                 if AAMOUNTS.get(inToken):
                     if AAMOUNTS[inToken] >= 0:
                         printt_debug("set amount out min to" )
-                        amountOutMin = AAMOUNTS[inToken]
+                        amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
                         printt_debug("set amount out min to" , amountOutMin)
                 deadline = int(time() + + 60)
 
@@ -3629,13 +3629,13 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
                 
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
+                    amountOutMin = 0
                 else:
                     amountOutMin = int(amount_out * (1 - (slippage / 100)))
                 if AAMOUNTS.get(inToken):
                     if AAMOUNTS[inToken] >= 0:
                         printt_debug("set amount out min to" )
-                        amountOutMin = AAMOUNTS[inToken]
+                        amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
                         printt_debug("set amount out min to" , amountOutMin)
                 deadline = int(time() + + 60)
                 
