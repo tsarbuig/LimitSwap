@@ -4036,8 +4036,8 @@ def buy(token_dict, inToken, outToken, pwd):
         #amounts_out
     else:
         amount = Decimal(token_dict['_HOW_MANY'])
-        if int(token_dict['_GASC']) >= 0
-        	token_dict['_GAS_TO_USE'] = int(token_dict['_GASC'])
+        if int(token_dict['_GASC']) >= 0:
+            token_dict['_GAS_TO_USE'] = int(token_dict['_GASC'])
         AAMOUNTS[inToken] = float(token_dict['_QUANTITY'])
     slippage = token_dict['SLIPPAGE']
     gaslimit = token_dict['GASLIMIT']
