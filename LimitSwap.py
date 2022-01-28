@@ -606,6 +606,8 @@ def load_tokens_file(tokens_path, load_message=True):
     # _RUGDOC_DECISION      - decision of the user after RugDoc API check
     # _TOKEN_BALANCE        - the number of traded tokens the user has in his wallet
     # _PREVIOUS_TOKEN_BALANCE - the number of traded tokens the user has in his wallet before BUY order
+    # _IN_TOKEN             - _IN_TOKEN is the token you want to BUY (example : CAKE)
+    # _OUT_TOKEN            - _OUT_TOKEN is the token you want to TRADE WITH (example : ETH or USDT)
     # _BASE_BALANCE         - balance of Base token, calculated at bot launch and after a BUY/SELL
     # _BASE_PRICE           - price of Base token, calculated at bot launch with calculate_base_price
     # _BASE_USED_FOR_TX     - amount of base balance used to make the Tx transaction
@@ -639,6 +641,8 @@ def load_tokens_file(tokens_path, load_message=True):
         '_INFORMED_SELL': False,
         '_REACHED_MAX_TOKENS': False,
         '_TRADING_IS_ON': False,
+        '_IN_TOKEN': "",
+        '_OUT_TOKEN': "",
         '_RUGDOC_DECISION': "",
         '_GAS_TO_USE': 0,
         '_GAS_IS_CALCULATED': False,
@@ -2093,7 +2097,7 @@ def check_liquidity_amount(token, DECIMALS_OUT, DECIMALS_weth):
         printt("")
         
         if float(token['MINIMUM_LIQUIDITY_IN_DOLLARS']) <= float(liquidity_amount_in_dollars):
-            printt_ok("MINIMUM_LIQUIDITY_IN_DOLLARS parameter =", int(token['MINIMUM_LIQUIDITY_IN_DOLLARS']), " --> Enough liquidity detected : Buy Signal Found!")
+            printt_ok("MINIMUM_LIQUIDITY_IN_DOLLARS parameter =", int(token['MINIMUM_LIQUIDITY_IN_DOLLARS']), " --> Enough liquidity detected : let's go!")
             return 1
         
         # This position isn't looking good. Inform the user, disable the token and break out of this loop
@@ -2133,7 +2137,7 @@ def check_liquidity_amount(token, DECIMALS_OUT, DECIMALS_weth):
         printt("Current", token['SYMBOL'], "Liquidity =", "{:.6f}".format(liquidity_amount_in_dollars), "$")
         
         if float(token['MINIMUM_LIQUIDITY_IN_DOLLARS']) <= float(liquidity_amount_in_dollars):
-            printt_ok("MINIMUM_LIQUIDITY_IN_DOLLARS parameter =", int(token['MINIMUM_LIQUIDITY_IN_DOLLARS']), " --> Enough liquidity detected : Buy Signal Found!")
+            printt_ok("MINIMUM_LIQUIDITY_IN_DOLLARS parameter =", int(token['MINIMUM_LIQUIDITY_IN_DOLLARS']), " --> Enough liquidity detected : let's go!")
             return 1
         
         # This position isn't looking good. Inform the user, disable the token and break out of this loop
@@ -3321,7 +3325,7 @@ def buy(token_dict, inToken, outToken, pwd):
 
         gaslimit = int(gaslimit)
         slippage = int(slippage)
-        amount = int(float(amount) * 1000000000000000000)
+        amount = int(float(amount) * token_dict['_BASE_DECIMALS'])
         buynumber = 0
 
         if multiplebuys.lower() == 'true':
@@ -4098,7 +4102,17 @@ def run():
         # TODO PRUNE: Prune tokens if the user doesn't want to trade them. Exit only if we don't have any more tokens left
         # TODO ARG: Implement an argument that auto accepts or prunes tokens that are rejected/accepted by the rugdoc check
         for token in tokens:
-            
+    
+            # Set the checksum addressed for the addresses we're working with
+            # _IN_TOKEN is the token you want to BUY (example : CAKE)
+            token['_IN_TOKEN'] = Web3.toChecksumAddress(token['ADDRESS'])
+    
+            # _OUT_TOKEN is the token you want to TRADE WITH (example : ETH or USDT)
+            if token['USECUSTOMBASEPAIR'] == 'true':
+                token['_OUT_TOKEN'] = Web3.toChecksumAddress(token['BASEADDRESS'])
+            else:
+                token['_OUT_TOKEN'] = weth
+    
             # Calculate contract / custom base pair / weth decimals
             printt_debug("Pre-calculations for token:", token['ADDRESS'], ": Gas / Decimals / Balance / RugDoc check")
             
@@ -4109,6 +4123,7 @@ def run():
                 token['_BASE_DECIMALS'] = int(decimals(token['BASEADDRESS']))
             else:
                 token['_BASE_DECIMALS'] = int(decimals(weth))
+            printt_debug("token['_BASE_DECIMALS']    :", token['_BASE_DECIMALS'])
 
             token['_WETH_DECIMALS'] = int(decimals(weth))
             printt_debug("token['_WETH_DECIMALS']    :", token['_WETH_DECIMALS'])
@@ -4186,17 +4201,6 @@ def run():
 
                 if token['ENABLED'] == 'true':
                     
-                    # Set the checksum addressed for the addresses we're working with
-                    # inToken is the token you want to BUY (example : CAKE)
-                    # TODO: We should do this once and store the values
-                    inToken = Web3.toChecksumAddress(token['ADDRESS'])
-                    
-                    # outToken is the token you want to TRADE WITH (example : ETH or USDT)
-                    if token['USECUSTOMBASEPAIR'] == 'true':
-                        outToken = Web3.toChecksumAddress(token['BASEADDRESS'])
-                    else:
-                        outToken = weth
-                    
                     #
                     # CHECK LIQUIDITY
                     #
@@ -4205,7 +4209,7 @@ def run():
                     #
                     # There are 2 cases :
                     # - Case 1: LIQUIDITYINNATIVETOKEN = true  --> we will snipe using ETH / BNB liquidity --> we use check_pool with weth
-                    # - Case 2: LIQUIDITYINNATIVETOKEN = false --> we will snipe using Custom Base Pair    --> we use check_pool with outToken
+                    # - Case 2: LIQUIDITYINNATIVETOKEN = false --> we will snipe using Custom Base Pair    --> we use check_pool with token['_OUT_TOKEN']
                     #
                     printt_debug("token['_LIQUIDITY_READY']:", token['_LIQUIDITY_READY'], "for token :", token['SYMBOL'])
                     
@@ -4213,10 +4217,10 @@ def run():
                         try:
                             if token['LIQUIDITYINNATIVETOKEN'] == 'true':
                                 #       Case 1/ LIQUIDITYINNATIVETOKEN = true  --> we will snipe using ETH / BNB liquidity --> we use check_pool with weth
-                                pool = check_pool(inToken, weth, token['_BASE_DECIMALS'])
+                                pool = check_pool(token['_IN_TOKEN'], weth, token['_BASE_DECIMALS'])
                             else:
-                                #       Case 2/ LIQUIDITYINNATIVETOKEN = false --> we will snipe using Custom Base Pair    --> we use check_pool with outToken
-                                pool = check_pool(inToken, outToken, token['_BASE_DECIMALS'])
+                                #       Case 2/ LIQUIDITYINNATIVETOKEN = false --> we will snipe using Custom Base Pair    --> we use check_pool with token['_OUT_TOKEN']
+                                pool = check_pool(token['_IN_TOKEN'], token['_OUT_TOKEN'], token['_BASE_DECIMALS'])
         
                             # Setting a minimum of 0.1 quantity of liquidity, to avoid users being scammed
                             if pool > 0.1:
@@ -4243,11 +4247,11 @@ def run():
                     token['_PREVIOUS_QUOTE'] = token['_QUOTE']
                     
                     if token['LIQUIDITYINNATIVETOKEN'] == 'true':
-                        token['_QUOTE'] = check_precise_price(inToken, outToken, token['_WETH_DECIMALS'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+                        token['_QUOTE'] = check_precise_price(token['_IN_TOKEN'], token['_OUT_TOKEN'], token['_WETH_DECIMALS'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
                     else:
                         # if token['LIQUIDITYINNATIVETOKEN'] == 'false', we need to use check_price, because check_precise_price do not work for now
                         # TODO : improve check_precise_price
-                        token['_QUOTE'] = check_price(inToken, outToken, token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
+                        token['_QUOTE'] = check_price(token['_IN_TOKEN'], token['_OUT_TOKEN'], token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], token['_CONTRACT_DECIMALS'], token['_BASE_DECIMALS'])
                     
                     if token['_ALL_TIME_HIGH'] == 0 and token['_ALL_TIME_LOW'] == 0:
                         token['_ALL_TIME_HIGH'] = token['_QUOTE']
@@ -4278,7 +4282,7 @@ def run():
                         #
     
                         if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true' or token['WAIT_FOR_OPEN_TRADE'].lower() == 'true_no_message' or token['WAIT_FOR_OPEN_TRADE'] == 'mempool' or token['WAIT_FOR_OPEN_TRADE'] == 'pinksale':
-                            wait_for_open_trade(token, inToken, outToken)
+                            wait_for_open_trade(token, token['_IN_TOKEN'], token['_OUT_TOKEN'])
     
                         printt_debug(token)
                         #
@@ -4316,7 +4320,7 @@ def run():
                         if command_line_args.sim_buy:
                             tx = command_line_args.sim_buy
                         else:
-                            tx = buy(token, outToken, inToken, userpassword)
+                            tx = buy(token, token['_OUT_TOKEN'], token['_IN_TOKEN'], userpassword)
 
                         if tx != False:
                             txbuyresult = wait_for_tx(token, tx, token['ADDRESS'])
@@ -4349,7 +4353,7 @@ def run():
 
                                 # If user selected WAIT_FOR_OPEN_TRADE = 'XXX_after_buy_tx_failed" bot enters WAIT_FOR_OPEN_TRADE mode
                                 if token['WAIT_FOR_OPEN_TRADE'].lower() == 'true_after_buy_tx_failed' or token['WAIT_FOR_OPEN_TRADE'].lower() == 'true_after_buy_tx_failed_no_message' or token['WAIT_FOR_OPEN_TRADE'] == 'mempool_after_buy_tx_failed':
-                                    wait_for_open_trade(token, inToken, outToken)
+                                    wait_for_open_trade(token, token['_IN_TOKEN'], token['_OUT_TOKEN'])
 
                             else:
                                 # transaction is a SUCCESS
@@ -4365,7 +4369,7 @@ def run():
                                 
                                 # Check the balance of our wallet
                                 DECIMALS = token['_CONTRACT_DECIMALS']
-                                token['_TOKEN_BALANCE'] = check_balance(inToken, token['SYMBOL'],display_quantity=True) / DECIMALS
+                                token['_TOKEN_BALANCE'] = check_balance(token['_IN_TOKEN'], token['SYMBOL'],display_quantity=True) / DECIMALS
                                 printt_ok("", write_to_log=True)
                                 printt_ok("You bought", token['_TOKEN_BALANCE'] - token['_PREVIOUS_TOKEN_BALANCE'], token['SYMBOL'], "tokens", write_to_log=True)
                                 printt_ok("----------------------------------", write_to_log=True)
@@ -4459,8 +4463,20 @@ def run():
                         printt_ok("", write_to_log=True)
                         printt_ok("Sell price in", token['_PAIR_TO_DISPLAY'], ":", log_price, write_to_log=True)
                         printt_ok("--------------------------------------------------------------")
-                        
-                        tx = sell(token, inToken, outToken)
+
+                        #
+                        # LIQUIDITY CHECK
+                        #   If the option is selected
+                        #
+
+                        if token["MINIMUM_LIQUIDITY_IN_DOLLARS"] != 0:
+                            liquidity_result = check_liquidity_amount(token, token['_BASE_DECIMALS'], token['_WETH_DECIMALS'])
+                            if liquidity_result == 0:
+                                continue
+                            else:
+                                pass
+
+                        tx = sell(token, token['_IN_TOKEN'], token['_OUT_TOKEN'])
                         
                         if tx != False:
                             txsellresult = wait_for_tx(token, tx, token['ADDRESS'])
@@ -4491,7 +4507,7 @@ def run():
 
                                 
                                 # We ask the bot to check if your allowance is > to your balance.
-                                check_approval(token, inToken, token['_TOKEN_BALANCE'] * 1000000000000000000, 'txfail')
+                                check_approval(token, token['_IN_TOKEN'], token['_TOKEN_BALANCE'] * 1000000000000000000, 'txfail')
 
                                 printt_debug("3095 _FAILED_TRANSACTIONS:", token['_FAILED_TRANSACTIONS'])
                             else:
