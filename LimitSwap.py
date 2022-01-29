@@ -2323,6 +2323,22 @@ def approve(address, amount):
         sleep(10)
         sys.exit()
 
+def compare_priceg(price,precios,quantitys,gases,expero):
+    return compare_priceg(price,precios,quantitys,gases,expero,0)
+
+def compare_priceg(price,precios,quantitys,gases,expero,index=0):
+    if index>=len(precios):
+        return False,0,0,0
+    check=Decimal(precios[index])
+    if (price<check):
+        ok,precio,cantidad,gas=compare_priceg(price,precios,quantitys,gases,expero,index+1)
+        if (ok):
+            return ok,precio,cantidad,gas
+        else:
+            return True,quantitys[index],expero[index],gases[index]
+    else:
+        return False,0,0,0
+
 
 def check_approval(token, address, allowance_to_compare_with, condition):
     printt_debug("ENTER check_approval()")
@@ -3352,6 +3368,11 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
             else:
                 amountOutMin = int(amount_out * (1 - (slippage / 100)))
 
+            if AAMOUNTS.get(inToken):
+                if AAMOUNTS[inToken] >= 0:
+                    printt_debug("set amount out min to" )
+                    amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
+                    printt_debug("set amount out min to" , amountOutMin)
             deadline = int(time() + + 60)
             
 
@@ -3459,7 +3480,11 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 amountOutMin = 0
             else:
                 amountOutMin = int(amount_out * (1 - (slippage / 100)))
-            
+            if AAMOUNTS.get(inToken):
+                if AAMOUNTS[inToken] >= 0:
+                    printt_debug("set amount out min to" )
+                    amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
+                    printt_debug("set amount out min to" , amountOutMin)
             deadline = int(time() + + 60)
             
             if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
@@ -3512,10 +3537,14 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 amount_out = routerContract.functions.getAmountsOut(amount, [inToken, weth, outToken]).call()[-1]
                 
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
+                    amountOutMin = 0
                 else:
                     amountOutMin = int(amount_out * (1 - (slippage / 100)))
-                    
+                if AAMOUNTS.get(inToken):
+                    if AAMOUNTS[inToken] >= 0:
+                        printt_debug("set amount out min to" )
+                        amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
+                        printt_debug("set amount out min to" , amountOutMin)
                 deadline = int(time() + + 60)
 
                 if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
@@ -3578,10 +3607,14 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
                 
                 if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
+                    amountOutMin = 0
                 else:
                     amountOutMin = int(amount_out * (1 - (slippage / 100)))
-
+                if AAMOUNTS.get(inToken):
+                    if AAMOUNTS[inToken] >= 0:
+                        printt_debug("set amount out min to" )
+                        amountOutMin = int(float(AAMOUNTS[inToken])*decimals(outToken))
+                        printt_debug("set amount out min to" , amountOutMin)
                 deadline = int(time() + + 60)
                 
                 if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
@@ -3959,7 +3992,7 @@ def preapprove_base(token):
  
     printt_debug("EXIT - preapprove_base()")
 
-
+AAMOUNTS={}
 def buy(token_dict, inToken, outToken, pwd):
     # Function: buy
     # ----------------------------
@@ -3975,7 +4008,15 @@ def buy(token_dict, inToken, outToken, pwd):
     printt_debug("ENTER buy()")
     
     # Map variables until all code is cleaned up.
-    amount = token_dict['BUYAMOUNTINBASE']
+    if token_dict.get('TOKENS_BUY_PRICE') is None:
+        amount = token_dict['BUYAMOUNTINBASE']
+        #token_dict['_GAS_TO_USE']
+        #amounts_out
+    else:
+        amount = Decimal(token_dict['_HOW_MANY'])
+        if int(token_dict['_GASC']) >= 0:
+            token_dict['_GAS_TO_USE'] = int(token_dict['_GASC'])
+        AAMOUNTS[inToken] = float(token_dict['_QUANTITY'])
     slippage = token_dict['SLIPPAGE']
     gaslimit = token_dict['GASLIMIT']
     boost = token_dict['BOOSTPERCENT']
@@ -5009,7 +5050,11 @@ def run():
                     #
                     
                     if token['_QUOTE'] != 0 and token['_QUOTE'] < Decimal(token['BUYPRICEINBASE']) and token['_REACHED_MAX_SUCCESS_TX'] == False and token['_REACHED_MAX_TOKENS'] == False and token['ENABLED'] == 'true':
-    
+                        if token.get('TOKENS_BUY_PRICE'):
+                            buy_ok,how_many,quantity,gasc=compare_priceg(token['_QUOTE'],token['TOKENS_BUY_PRICE'],token['TOKENS_BUY_AMOUNT_INBASE'],token['TOKENS_GAS_PRICE'],token['TOKENS_QUANTITY'], 0)
+                            token['_HOW_MANY']=how_many
+                            token['_QUANTITY']=quantity
+                            token['_GASC']=gasc
                         #
                         # OPEN TRADE CHECK
                         #   If the option is selected, bot wait for trading_is_on == True to create a BUY order
