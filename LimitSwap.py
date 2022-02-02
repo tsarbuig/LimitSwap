@@ -559,7 +559,8 @@ def load_tokens_file(tokens_path, load_message=True):
         'KIND_OF_SWAP',
         'ALWAYS_CHECK_BALANCE',
         'WAIT_FOR_OPEN_TRADE',
-        'WATCH_STABLES_PAIRS'
+        'WATCH_STABLES_PAIRS',
+        'ANTIRUG'
     ]
     
     default_value_settings = {
@@ -575,6 +576,7 @@ def load_tokens_file(tokens_path, load_message=True):
         'BOOSTPERCENT': 50,
         'GASLIMIT': 1000000,
         'BUYAFTER_XXX_SECONDS': 0,
+        'ANTIRUG': "",
         'XXX_SECONDS_COOLDOWN_AFTER_BUY_SUCCESS_TX': 0,
         'XXX_SECONDS_COOLDOWN_AFTER_SELL_SUCCESS_TX': 0,
         'MAX_FAILED_TRANSACTIONS_IN_A_ROW': 2,
@@ -605,6 +607,7 @@ def load_tokens_file(tokens_path, load_message=True):
     #                         flag after enough tokens that brings the number of token up to the MAX_SUCCESS_TRANSACTIONS_IN_A_ROW. In other words
     #                         done depend on (if MAX_SUCCESS_TRANSACTIONS_IN_A_ROW < _REACHED_MAX_SUCCESS_TX) conditionals
     # _TRADING_IS_ON        - defines if trading is ON of OFF on a token. Used with WAIT_FOR_OPEN_TRADE parameter
+    # _SELL_BEFORE_RUG      - decision to sell before a rug. Used to sell before liquidity is pulled, trading is disabled or high taxes 
     # _RUGDOC_DECISION      - decision of the user after RugDoc API check
     # _TOKEN_BALANCE        - the number of traded tokens the user has in his wallet
     # _PREVIOUS_TOKEN_BALANCE - the number of traded tokens the user has in his wallet before BUY order
@@ -633,7 +636,7 @@ def load_tokens_file(tokens_path, load_message=True):
     #                         should be printed again, or just a dot
     # _LAST_MESSAGE         - a place to store a copy of the last message printed to conside, use to avoid
     #                         repeated liquidity messages
-    # _GAS_IS_CALCULATED    - if gas needs to be calculated by wait_for_open_trade, this parameter is set to true
+    # _GAS_IS_CALCULATED    - if gas needs to be calculated by wait_for_open_trade or antirug this parameter is set to true
     # _EXCHANGE_BASE_SYMBOL - this is the symbol for the base that is used by the exchange the token is trading on
     # _PAIR_SYMBOL          - the symbol for this TOKEN/BASE pair
 
@@ -800,6 +803,7 @@ def reload_tokens_file(tokens_path, load_message=True):
         'KIND_OF_SWAP',
         'ALWAYS_CHECK_BALANCE',
         'WAIT_FOR_OPEN_TRADE',
+        'ANTIRUG',
         'WATCH_STABLES_PAIRS'
     ]
 
@@ -2791,12 +2795,13 @@ def build_sell_conditions(token_dict, condition, show_message):
     # buy - provides the opportunity to specify a buy price, otherwise token_dict['_COST_PER_TOKEN'] is used
     # sell - provides the opportunity to specify a buy price, otherwise token_dict['SELLPRICEINBASE'] is used
     # stop - provides the opportunity to specify a buy price, otherwise token_dict['STOPLOSSPRICEINBASE'] is used
+    # rug - token_dict['ANTIRUG'] is used
 
     printt_debug("ENTER build_sell_conditions() with", condition, "parameter")
     
     sell = token_dict['SELLPRICEINBASE']
     stop = token_dict['STOPLOSSPRICEINBASE']
-
+    rug = token_dict['ANTIRUG']
     # Calculates cost per token
     # TODO : solve problem here https://t.me/LimitSwap/102375
     if float(token_dict['_TOKEN_BALANCE']) > 0:
@@ -4151,6 +4156,91 @@ def buy(token_dict, inToken, outToken, pwd):
         calculate_base_balance(token_dict)
         return False
 
+def antirug(token_dict, inToken, outToken):
+    printt_debug("ENTER antirug")
+    
+    printt(" ", write_to_log=False)
+    printt("-----------------------------------------------------------------------------------------------------------------------------", write_to_log=True)
+    printt("ANTIRUG is enabled", write_to_log=True)
+    printt("", write_to_log=True)
+
+    if token['ANTIRUG'] == 'true':
+        printt("Bot will scan mempool to detect RUGS", write_to_log=True)
+        printt(" ", write_to_log=False)
+        printt("there is a LOT of ways to detect rugs, so we cannot be 100% to detect it in the mempool", write_to_log=False)
+        printt(" ", write_to_log=False)
+        printt_err("---- BE CAREFUL ----", write_to_log=True)
+        printt(" ", write_to_log=False)
+        printt("------------------------------------------------------------------------------------------------------------------------------", write_to_log=True)
+
+    if token['ANTIRUG'] == 'true':
+        printt("It will scan mempool to detect rugs", write_to_log=True)
+        printt("------------------------------------------------------------------------------------------------------------------------------", write_to_log=True)
+
+    openTrade = True
+
+    token['_PREVIOUS_QUOTE'] = check_price(inToken, outToken, token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], int(token['_CONTRACT_DECIMALS']), int(token['_BASE_DECIMALS']))
+    
+    # It looks ruggy, we look into Address's transactions for 0xbaa2abde methodID
+    if token['ANTIRUG'] == 'true':
+        tx_filter = client.eth.filter({"filter_params": "pending", "address": Web3.toChecksumAddress(token['ADDRESS'])})
+    else:
+        tx_filter = client.eth.filter({"filter_params": "pending", "address": inToken})
+ 
+    if token['ANTIRUG'] == 'true':
+        # Function: removeliquidity() - check examples below
+        list_of_methodId = ["0xbaa2abde"]
+    else:
+        list_of_methodId = ["0x02751cec", "0xaf2979eb", "0xded9382a", "0x5b0d5984", "0x2195995c"]
+
+    while openTrade == True:
+    
+       if token['ANTIRUG'] == 'true':
+           pprice = check_price(inToken, outToken, token['USECUSTOMBASEPAIR'], token['LIQUIDITYINNATIVETOKEN'], int(token['_CONTRACT_DECIMALS']), int(token['_BASE_DECIMALS']))
+    
+           if pprice != float(token['_PREVIOUS_QUOTE']):
+                token['_SELL_BEFORE_RUG'] = True
+                printt_ok("Token price:", pprice, "--> SOMETHING IS HAPPENING :)", write_to_log=True)
+                printt_ok("RUG IS HAPPENING --> rug is imminent --> Bot will sell", write_to_log=True)
+                break
+
+           printt("Token price:", pprice)
+
+
+       try:
+            for tx_event in tx_filter.get_new_entries():
+
+                txHash = tx_event['transactionHash']
+                txHashDetails = client.eth.get_transaction(txHash)
+                # printt_debug(txHashDetails)
+                txFunction = txHashDetails.input[:10]
+                if txFunction.lower() in list_of_methodId:
+                    antiRug = True
+                    token['_GAS_IS_CALCULATED'] = True
+                    token['_GAS_TO_USE'] = int(txHashDetails.gasPrice) / 1000000000
+                    printt_ok("Rug pull detected --> Rug is happening --> Bot will sell asap", write_to_log=True)
+                    printt_ok("MethodID: ", txFunction, " Block: ", tx_event['blockNumber'], " Found Signal", "in txHash:", txHash.hex(), write_to_log=True)
+                    printt_ok("GAS will be the same as liquidity adding event. GAS=", token['_GAS_TO_USE'])
+                    break
+                else:
+                    printt("Found something in mempool - MethodID: ", txFunction, " Block: ", tx_event['blockNumber'])
+       except Exception as e:
+            printt_err("ANTIRUG Error. It can happen with Public node : private node is recommended. Still, let's continue.")
+            continue
+
+    # Map variables untill all code is cleaned up.
+    amount = token_dict['SELLAMOUNTINTOKENS']
+    moonbag = token_dict['MOONBAG']
+    gas = token_dict['_GAS_TO_USE']
+    slippage = token_dict['SLIPPAGE']
+    gaslimit = token_dict['GASLIMIT']
+    boost = token_dict['BOOSTPERCENT']
+    fees = token_dict["HASFEES"]
+    custom = token_dict['USECUSTOMBASEPAIR']
+    symbol = token_dict['SYMBOL']
+    routing = token_dict['LIQUIDITYINNATIVETOKEN']
+    gaspriority = token_dict['GASPRIORITY_FOR_ETH_ONLY']
+    DECIMALS = token_dict['_CONTRACT_DECIMALS']
 
 def sell(token_dict, inToken, outToken):
     # Map variables until all code is cleaned up.
@@ -5301,6 +5391,16 @@ def run():
                         printt_ok("", write_to_log=True)
                         printt_ok("Sell price in", token['_PAIR_TO_DISPLAY'], ":", log_price, write_to_log=True)
                         printt_ok("--------------------------------------------------------------")
+
+                    if antirug_conditions_met == True:
+                        log_price = "{:.18f}".format(token['_QUOTE'])
+                        logging.info("Rug Signal Found @" + str(log_price))
+                        printt_ok("--------------------------------------------------------------")
+                        printt_ok("Rug Signal Found =-= Rug Signal Found =-= Rug Signal Found ")
+                        printt_ok("", write_to_log=True)
+                        printt_ok("Sell price in", token['_PAIR_TO_DISPLAY'], ":", log_price, write_to_log=True)
+                        printt_ok("--------------------------------------------------------------")
+
 
                         #
                         # LIQUIDITY CHECK
