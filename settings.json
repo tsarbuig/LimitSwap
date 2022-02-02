@@ -1,27 +1,42 @@
 [
 {
-"LIMITWALLETPRIVATEKEY": "do not enter it manually, open the bot : it will encrypt it",
-"LIMITWALLETADDRESS": "wallet address where you hold your LIMIT tokens",
-"WALLETADDRESS": "wallet address you want to trade on : can be different from LIMIT wallet",
-"PRIVATEKEY": "do not enter it manually, open the bot : it will encrypt it",
-"WALLETADDRESS2": "null",
-"PRIVATEKEY2": "null",
-"WALLETADDRESS3": "null",
-"PRIVATEKEY3": "null",
-"WALLETADDRESS4": "null",
-"PRIVATEKEY4": "null",
-"WALLETADDRESS5": "null",
-"PRIVATEKEY5": "null",
-"USECUSTOMNODE": "false",
-	"CUSTOMNODE": "false", // put your own node here if you want and set USECUSTOMNODE = true
-"EXCHANGE": "pancakeswap",
-	"EXCHANGEVERSION": "2", // only for Pancakeswap
-"PREAPPROVE": "true", // team recommends to set it to true, it's important
-"UNLIMITEDSLIPPAGE": "false", // be careful, this parameter is dangerous :) use it for degen snipings only
-"PASSWORD_ON_CHANGE": "false", // set this to true if you want the bot to ask for your PK password if you update tokens.json in real time
-"VERBOSE_PRICING": "true", // set to false if you want a new price line to appear only when price change
-"SLOW_MODE": "false", // use this if you want the bot to make only 1 price check every 0.5s
-"ENABLE_APPRISE_NOTIFICATIONS": "true", // use this if you want to receive notifications with APPRISE API
-"APPRISE_PARAMETERS": ["macosx://", "windows://"] // you can enter new parameters. Respect the format. Check https://github.com/caronc/apprise
+    "LIMITWALLETPRIVATEKEY": "",
+    "LIMITWALLETADDRESS": "",
+    "WALLETADDRESS": "",
+    "PRIVATEKEY": "",
+    "WALLETADDRESS2": "no_utility",
+    "PRIVATEKEY2": "null",
+    "WALLETADDRESS3": "null",
+    "PRIVATEKEY3": "null",
+    "WALLETADDRESS4": "null",
+    "PRIVATEKEY4": "null",
+    "WALLETADDRESS5": "null",
+    "PRIVATEKEY5": "null",
+    "USECUSTOMNODE": "false",
+    "CUSTOMNODE": "false",
+    "EXCHANGE": "pancakeswaptestnet",
+    "EXCHANGEVERSION": "2",
+    "PREAPPROVE": "true",
+    "UNLIMITEDSLIPPAGE": "false",
+    "PASSWORD_ON_CHANGE": "false",
+    "VERBOSE_PRICING": "true",
+    "SLOW_MODE": "false",
+    "ENABLE_APPRISE_NOTIFICATIONS": "true",
+    "APPRISE_PARAMETERS": [
+        "macosx://",
+        "windows://"
+    ],
+    "_EXCHANGE_BASE_SYMBOL": "BNBt",
+    "_STABLE_BASES": {
+        "BUSD": {
+            "address": "0x8301f2213c0eed49a7e28ae4c3e91722919b8b47",
+            "multiplier": 0
+        },
+        "DAI ": {
+            "address": "0x8a9424745056eb399fd19a0ec26a14316684e274",
+            "multiplier": 0
+        }
+    },
+    "ENCRYPTPRIVATEKEYS": "true"
 }
 ]
