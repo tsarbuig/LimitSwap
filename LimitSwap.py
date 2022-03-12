@@ -11,7 +11,6 @@ from cachetools import cached, LRUCache, TTLCache
 from hexbytes import HexBytes
 import requests
 import cryptocode, re, pwinput
-import apprise
 
 from app.preload import *
 from app.exchanges import getRouters
@@ -206,6 +205,493 @@ def save_settings(settings, pwd):
         f.write(json.dumps(output_settings, indent=4))
         f.write("\n]\n")
 
+
+def load_tokens_file(tokens_path, load_message=True):
+    # Function: load_tokens_File
+    # ----------------------------
+    # loads the token definition file defined by command_line_args.settings, sets sane defaults if variables aren't found in settings file
+    # exits with an error message if necessary variables are not found in the settings files
+    #
+    # IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE
+    # Any additional options added to this function must also be considered for change in reload_tokens_file()
+    #
+    # tokens_path: the path of the file to load tokens from
+    # load_message: if true we print to stdout that we're loading settings from the file
+    # last_modified: perform this function only if he file has been modified since this date
+    #
+    # returns: 1. a dictionary of dictionaries in json format containing details of the tokens we're rading
+    #          2. the timestamp for the last modification of the file
+    
+    # Any new token configurations that are added due to "WATCH_STABLES_PAIRS" configuration will be added to this array. After we are done
+    # loading all settings from tokens.json, we'll append this list to the token list
+    
+    printt_debug("ENTER load_tokens_file")
+    
+    global set_of_new_tokens
+    
+    if load_message == True:
+        print(timestamp(), "Loading tokens from", tokens_path)
+    
+    with open(tokens_path, ) as js_file:
+        t = jsmin(js_file.read())
+    tokens = json.loads(t)
+    
+    required_user_settings = [
+        'ADDRESS',
+        'BUYAMOUNTINBASE',
+        'BUYPRICEINBASE',
+        'SELLPRICEINBASE'
+    ]
+    
+    default_true_settings = [
+        'LIQUIDITYINNATIVETOKEN'
+    ]
+    
+    default_false_settings = [
+        'ENABLED',
+        'USECUSTOMBASEPAIR',
+        'HASFEES',
+        'RUGDOC_CHECK',
+        'MULTIPLEBUYS',
+        'KIND_OF_SWAP',
+        'ALWAYS_CHECK_BALANCE',
+        'WAIT_FOR_OPEN_TRADE',
+        'WATCH_STABLES_PAIRS'
+    ]
+    
+    default_value_settings = {
+        'SLIPPAGE': 49,
+        'BUYAMOUNTINTOKEN': 0,
+        'MAXTOKENS': 0,
+        'MOONBAG': 0,
+        'MINIMUM_LIQUIDITY_IN_DOLLARS': 10000,
+        'MAX_BASE_AMOUNT_PER_EXACT_TOKENS_TRANSACTION': 0.5,
+        'SELLAMOUNTINTOKENS': 'all',
+        'GAS': 8,
+        'MAX_GAS': 99999,
+        'BOOSTPERCENT': 50,
+        'GASLIMIT': 1000000,
+        'BUYAFTER_XXX_SECONDS': 0,
+        'XXX_SECONDS_COOLDOWN_AFTER_BUY_SUCCESS_TX': 0,
+        'XXX_SECONDS_COOLDOWN_AFTER_SELL_SUCCESS_TX': 0,
+        'MAX_FAILED_TRANSACTIONS_IN_A_ROW': 2,
+        'MAX_SUCCESS_TRANSACTIONS_IN_A_ROW': 2,
+        'GASPRIORITY_FOR_ETH_ONLY': 1.5,
+        'STOPLOSSPRICEINBASE': 0,
+        'BUYCOUNT': 0,
+        'TRAILING_STOP_LOSS': 0,
+        'ANTI_DUMP_PRICE': 0,
+        'PINKSALE_PRESALE_ADDRESS': "",
+        '_STABLE_BASES': {}
+    }
+    
+    # There are values that we will set internally. They must all begin with _
+    # _LIQUIDITY_CHECKED    - false if we have yet to check liquidity for this token
+    # _INFORMED_SELL        - set to true when we've already informed the user that we're selling this position
+    # _LIQUIDITY_READY      - a flag to test if we've found liquidity for this pair
+    # _LIQUIDITY_CHECKED    - a flag to test if we've check for the amount of liquidity for this pair
+    # _INFORMED_SELL        - a flag to store that we've printed to console that we are going to be selling the position
+    # _REACHED_MAX_TOKENS   - flag to look at to determine if the user's wallet has reached the maximum number of flags
+    #                         this flag is used for conditionals throughout the run of this bot. Be sure to set this
+    #                         flag after enough tokens that brings the number of token up to the MAXTOKENS. In other words
+    #                         done depend on (if MAXTOKENS < _TOKEN_BALANCE) conditionals
+    # _NOT_ENOUGH_TO_BUY    - if user does not have enough base pair in his wallet to buy
+    # _GAS_TO_USE           - the amount of gas the bot has estimated it should use for the purchase of a token
+    #                         this number is calculated every bot start up
+    # _FAILED_TRANSACTIONS  - the number of times a transaction has failed for this token
+    # _SUCCESS_TRANSACTIONS - the number of times a transaction has succeeded for this token
+    # _REACHED_MAX_SUCCESS_TX  - flag to look at to determine if the user's wallet has reached the maximum number of flags
+    #                         this flag is used for conditionals throughout the run of this bot. Be sure to set this
+    #                         flag after enough tokens that brings the number of token up to the MAX_SUCCESS_TRANSACTIONS_IN_A_ROW. In other words
+    #                         done depend on (if MAX_SUCCESS_TRANSACTIONS_IN_A_ROW < _REACHED_MAX_SUCCESS_TX) conditionals
+    # _TRADING_IS_ON        - defines if trading is ON of OFF on a token. Used with WAIT_FOR_OPEN_TRADE parameter
+    # _RUGDOC_DECISION      - decision of the user after RugDoc API check
+    # _TOKEN_BALANCE        - the number of traded tokens the user has in his wallet
+    # _PREVIOUS_TOKEN_BALANCE - the number of traded tokens the user has in his wallet before BUY order
+    # _IN_TOKEN             - _IN_TOKEN is the token you want to BUY (example : CAKE)
+    # _OUT_TOKEN            - _OUT_TOKEN is the token you want to TRADE WITH (example : ETH or USDT)
+    # _BASE_BALANCE         - balance of Base token, calculated at bot launch and after a BUY/SELL
+    # _BASE_PRICE           - price of Base token, calculated at bot launch with calculate_base_price
+    # _BASE_USED_FOR_TX     - amount of base balance used to make the Tx transaction
+    # _PAIR_TO_DISPLAY      - token symbol / base symbol
+    # _CUSTOM_BASE_BALANCE  - balance of Custom Base token, calculated at bot launch and after a BUY/SELL
+    # _QUOTE                - holds the token's quote
+    # _PREVIOUS_QUOTE       - holds the ask price for a token the last time a price was queried, this is used
+    #                         to determine the direction the market is going
+    # _LISTING_QUOTE        - Listing price of a token
+    # _BUY_THE_DIP_ACTIVE   - Price has reached 50% of listing price and we're ready to buy the dip
+    # _COST_PER_TOKEN       - the calculated/estimated price the bot paid for the number of tokens it traded
+    # _CALCULATED_SELLPRICEINBASE           - the calculated sell price created with build_sell_conditions()
+    # _CALCULATED_STOPLOSSPRICEINBASE       - the calculated stoploss price created with build_sell_conditions()
+    # _ALL_TIME_HIGH        - the highest price a token has had since the bot was started
+    # _ALL_TIME_LOW         - the lowest price a token has had since the bot was started
+    # _CONTRACT_DECIMALS    - the number of decimals a contract uses. Used to speed up some of our processes
+    #                         instead of querying the contract for the same information repeatedly.
+    # _BASE_DECIMALS        - the number of decimals of custom base pair. Used to speed up some of our processes
+    #                         instead of querying the contract for the same information repeatedly.
+    # _WETH_DECIMALS        - the number of decimals of weth.
+    # _LIQUIDITY_DECIMALS   - the number of decimals of liquidity.
+    # _LAST_PRICE_MESSAGE   - a copy of the last pricing message printed to console, used to determine the price
+    #                         should be printed again, or just a dot
+    # _LAST_MESSAGE         - a place to store a copy of the last message printed to conside, use to avoid
+    #                         repeated liquidity messages
+    # _GAS_IS_CALCULATED    - if gas needs to be calculated by wait_for_open_trade, this parameter is set to true
+    # _EXCHANGE_BASE_SYMBOL - this is the symbol for the base that is used by the exchange the token is trading on
+    # _PAIR_SYMBOL          - the symbol for this TOKEN/BASE pair
+    
+    program_defined_values = {
+        '_LIQUIDITY_READY': False,
+        '_LIQUIDITY_CHECKED': False,
+        '_INFORMED_SELL': False,
+        '_REACHED_MAX_TOKENS': False,
+        '_TRADING_IS_ON': False,
+        '_NOT_ENOUGH_TO_BUY': False,
+        '_IN_TOKEN': "",
+        '_OUT_TOKEN': "",
+        '_RUGDOC_DECISION': "",
+        '_GAS_TO_USE': 0,
+        '_GAS_IS_CALCULATED': False,
+        '_FAILED_TRANSACTIONS': 0,
+        '_SUCCESS_TRANSACTIONS': 0,
+        '_REACHED_MAX_SUCCESS_TX': False,
+        '_TOKEN_BALANCE': 0,
+        '_PREVIOUS_TOKEN_BALANCE': 0,
+        '_BASE_BALANCE': 0,
+        '_BASE_PRICE': calculate_base_price(),
+        '_BASE_USED_FOR_TX': 0,
+        '_PAIR_TO_DISPLAY': "Pair",
+        '_CUSTOM_BASE_BALANCE': 0,
+        '_QUOTE': 0,
+        '_PREVIOUS_QUOTE': 0,
+        '_LISTING_QUOTE': 0,
+        '_BUY_THE_DIP_ACTIVE': False,
+        '_ALL_TIME_HIGH': 0,
+        '_COST_PER_TOKEN': 0,
+        '_CALCULATED_SELLPRICEINBASE': 99999,
+        '_CALCULATED_STOPLOSSPRICEINBASE': 0,
+        '_ALL_TIME_LOW': 0,
+        '_CONTRACT_DECIMALS': 0,
+        '_BASE_DECIMALS': 0,
+        '_WETH_DECIMALS': 0,
+        '_LAST_PRICE_MESSAGE': 0,
+        '_LAST_MESSAGE': 0,
+        '_FIRST_SELL_QUOTE': 0,
+        '_BUILT_BY_BOT': False,
+        '_TRAILING_STOP_LOSS_PRICE': 0,
+        '_TRAILING_STOP_LOSS_WITHOUT_PERCENT': 0,
+        '_EXCHANGE_BASE_SYMBOL': settings['_EXCHANGE_BASE_SYMBOL'],
+        '_PAIR_SYMBOL': ''
+    }
+    
+    for token in tokens:
+        
+        # Keys that must be set
+        for required_key in required_user_settings:
+            if required_key not in token:
+                printt_err(required_key, "not found in configuration file in configuration for to token", token['SYMBOL'])
+                printt_err("Be careful, sometimes new parameter are added : please check default tokens.json file")
+                sleep(20)
+                exit(-1)
+        
+        for default_false in default_false_settings:
+            if default_false not in token:
+                printt_v(default_false, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a default value of false")
+                token[default_false] = "false"
+            else:
+                token[default_false] = token[default_false].lower()
+        
+        for default_true in default_true_settings:
+            if default_true not in token:
+                printt_v(default_true, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a default value of true")
+                token[default_true] = "true"
+            else:
+                token[default_true] = token[default_true].lower()
+        
+        for default_key in default_value_settings:
+            if default_key not in token:
+                printt_v(default_key, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a value of", default_value_settings[default_key])
+                token[default_key] = default_value_settings[default_key]
+            elif default_key == 'SELLAMOUNTINTOKENS':
+                default_value_settings[default_key] = default_value_settings[default_key].lower()
+        
+        # Set program values only if they haven't been set already
+        if '_LIQUIDITY_READY' not in token:
+            for value in program_defined_values:
+                token[value] = program_defined_values[value]
+        
+        for key in token:
+            if (isinstance(token[key], str)):
+                if re.search(r'^\d*\.\d+$', str(token[key])):
+                    token[key] = float(token[key])
+                elif re.search(r'^\d+$', token[key]):
+                    token[key] = int(token[key])
+        
+        if token['WATCH_STABLES_PAIRS'] == 'true' and token['USECUSTOMBASEPAIR'] == 'false':
+            if token['_COST_PER_TOKEN'] == 0:
+                build_sell_conditions(token, 'before_buy', 'hide_message')
+            else:
+                build_sell_conditions(token, 'after_buy', 'hide_message')
+            
+            for new_token_dict in build_extended_base_configuration(token):
+                set_of_new_tokens.append(new_token_dict)
+        elif token['WATCH_STABLES_PAIRS'] == 'true':
+            printt("")
+            printt_warn("Ignoring WATCH_STABLES_PAIRS", "for", token['SYMBOL'], ": WATCH_STABLES_PAIRS = true and USECUSTOMBASEPAIR = true is unsupported.")
+            printt("")
+        
+        if token['USECUSTOMBASEPAIR'] == 'true' and token['LIQUIDITYINNATIVETOKEN'] == 'false':
+            token['_PAIR_SYMBOL'] = token['SYMBOL'] + '/' + token['BASESYMBOL']
+        else:
+            token['_PAIR_SYMBOL'] = token['SYMBOL'] + '/' + token['_EXCHANGE_BASE_SYMBOL']
+    
+    # Add any tokens generated by "WATCH_STABLES_PAIRS" to the tokens list.
+    for token_dict in set_of_new_tokens:
+        tokens.append(token_dict)
+    return tokens
+
+
+def reload_tokens_file(tokens_path, load_message=True):
+    # Function: reload_tokens_File
+    # ----------------------------
+    # loads the token definition file defined by command_line_args.settings, sets sane defaults if variables aren't found in settings file
+    # exits with an error message if necessary variables are not found in the settings files
+    #
+    # IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE - IMPORTANT NOTE
+    # Any additional options added to this function must also be considered for change in reload_tokens_file()
+    #
+    # tokens_path: the path of the file to load tokens from
+    # load_message: if true we print to stdout that we're loading settings from the file
+    # last_modified: perform this function only if he file has been modified since this date
+    #
+    # returns: 1. a dictionary of dictionaries in json format containing details of the tokens we're rading
+    #          2. the timestamp for the last modification of the file
+    
+    # Any new token configurations that are added due to "WATCH_STABLES_PAIRS" configuration will be added to this array. After we are done
+    # loading all settings from tokens.json, we'll append this list to the token list
+    
+    printt_debug("ENTER reload_tokens_file")
+    
+    global _TOKENS_saved
+    global set_of_new_tokens
+    
+    printt_debug("reload_tokens_file _TOKENS_saved:", _TOKENS_saved)
+    set_of_new_tokens = []
+    
+    if load_message == True:
+        printt("")
+        printt("Reloading tokens from", tokens_path, '\033[31m', "- do NOT change token SYMBOL in real time", '\033[0m', write_to_log=True)
+        printt("")
+    
+    with open(tokens_path, ) as js_file:
+        t = jsmin(js_file.read())
+    tokens = json.loads(t)
+    
+    required_user_settings = [
+        'ADDRESS',
+        'BUYAMOUNTINBASE',
+        'BUYPRICEINBASE',
+        'SELLPRICEINBASE'
+    ]
+    
+    default_true_settings = [
+        'LIQUIDITYINNATIVETOKEN'
+    ]
+    
+    default_false_settings = [
+        'ENABLED',
+        'USECUSTOMBASEPAIR',
+        'HASFEES',
+        'RUGDOC_CHECK',
+        'MULTIPLEBUYS',
+        'KIND_OF_SWAP',
+        'ALWAYS_CHECK_BALANCE',
+        'WAIT_FOR_OPEN_TRADE',
+        'WATCH_STABLES_PAIRS'
+    ]
+    
+    default_value_settings = {
+        'SLIPPAGE': 49,
+        'BUYAMOUNTINTOKEN': 0,
+        'MAXTOKENS': 0,
+        'MOONBAG': 0,
+        'MINIMUM_LIQUIDITY_IN_DOLLARS': 10000,
+        'MAX_BASE_AMOUNT_PER_EXACT_TOKENS_TRANSACTION': 0.5,
+        'SELLAMOUNTINTOKENS': 'all',
+        'GAS': 8,
+        'MAX_GAS': 99999,
+        'BOOSTPERCENT': 50,
+        'GASLIMIT': 1000000,
+        'BUYAFTER_XXX_SECONDS': 0,
+        'XXX_SECONDS_COOLDOWN_AFTER_BUY_SUCCESS_TX': 0,
+        'XXX_SECONDS_COOLDOWN_AFTER_SELL_SUCCESS_TX': 0,
+        'MAX_FAILED_TRANSACTIONS_IN_A_ROW': 2,
+        'MAX_SUCCESS_TRANSACTIONS_IN_A_ROW': 2,
+        'GASPRIORITY_FOR_ETH_ONLY': 1.5,
+        'STOPLOSSPRICEINBASE': 0,
+        'BUYCOUNT': 0,
+        'TRAILING_STOP_LOSS': 0,
+        'ANTI_DUMP_PRICE': 0,
+        'PINKSALE_PRESALE_ADDRESS': "",
+        '_STABLE_BASES': {}
+    }
+    
+    program_defined_values = {
+        '_LIQUIDITY_READY': False,
+        '_LIQUIDITY_CHECKED': False,
+        '_INFORMED_SELL': False,
+        '_REACHED_MAX_TOKENS': False,
+        '_TRADING_IS_ON': False,
+        '_RUGDOC_DECISION': "",
+        '_GAS_TO_USE': 0,
+        '_GAS_IS_CALCULATED': False,
+        '_FAILED_TRANSACTIONS': 0,
+        '_SUCCESS_TRANSACTIONS': 0,
+        '_REACHED_MAX_SUCCESS_TX': False,
+        '_TOKEN_BALANCE': 0,
+        '_PREVIOUS_TOKEN_BALANCE': 0,
+        '_BASE_BALANCE': 0,
+        '_BASE_PRICE': 0,
+        '_BASE_USED_FOR_TX': 0,
+        '_PAIR_TO_DISPLAY': "Pair",
+        '_CUSTOM_BASE_BALANCE': 0,
+        '_QUOTE': 0,
+        '_PREVIOUS_QUOTE': 0,
+        '_LISTING_QUOTE': 0,
+        '_BUY_THE_DIP_ACTIVE': False,
+        '_ALL_TIME_HIGH': 0,
+        '_COST_PER_TOKEN': 0,
+        '_CALCULATED_SELLPRICEINBASE': 99999,
+        '_CALCULATED_STOPLOSSPRICEINBASE': 0,
+        '_ALL_TIME_LOW': 0,
+        '_CONTRACT_DECIMALS': 0,
+        '_BASE_DECIMALS': 0,
+        '_WETH_DECIMALS': 0,
+        '_LIQUIDITY_DECIMALS': 0,
+        '_LAST_PRICE_MESSAGE': 0,
+        '_LAST_MESSAGE': 0,
+        '_FIRST_SELL_QUOTE': 0,
+        '_BUILT_BY_BOT': False,
+        '_TRAILING_STOP_LOSS_PRICE': 0,
+        '_TRAILING_STOP_LOSS_WITHOUT_PERCENT': 0,
+        '_EXCHANGE_BASE_SYMBOL': settings['_EXCHANGE_BASE_SYMBOL'],
+        '_PAIR_SYMBOL': '',
+        '_NOT_ENOUGH_TO_BUY': False,
+        '_IN_TOKEN': '',
+        '_OUT_TOKEN': ''
+    }
+    
+    for token in tokens:
+        
+        # Keys that must be set
+        for required_key in required_user_settings:
+            if required_key not in token:
+                printt_err(required_key, "not found in configuration file in configuration for to token", token['SYMBOL'])
+                printt_err("Be careful, sometimes new parameter are added : please check default tokens.json file")
+                sleep(20)
+                exit(-1)
+        
+        for default_false in default_false_settings:
+            if default_false not in token:
+                printt_v(default_false, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a default value of false")
+                token[default_false] = "false"
+            else:
+                token[default_false] = token[default_false].lower()
+        
+        for default_true in default_true_settings:
+            if default_true not in token:
+                printt_v(default_true, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a default value of true")
+                token[default_true] = "true"
+            else:
+                token[default_true] = token[default_true].lower()
+        
+        for default_key in default_value_settings:
+            if default_key not in token:
+                printt_v(default_key, "not found in configuration file in configuration for to token", token['SYMBOL'], "setting a value of", default_value_settings[default_key])
+                token[default_key] = default_value_settings[default_key]
+            elif default_key == 'SELLAMOUNTINTOKENS':
+                default_value_settings[default_key] = default_value_settings[default_key].lower()
+        
+        # Set program values only if they haven't been set already
+        if '_LIQUIDITY_READY' not in token:
+            for value in program_defined_values:
+                token[value] = program_defined_values[value]
+        
+        for key in token:
+            if (isinstance(token[key], str)):
+                if re.search(r'^\d*\.\d+$', str(token[key])):
+                    token[key] = float(token[key])
+                elif re.search(r'^\d+$', token[key]):
+                    token[key] = int(token[key])
+        
+        if token['WATCH_STABLES_PAIRS'] == 'true' and token['USECUSTOMBASEPAIR'] == 'false':
+            if token['_COST_PER_TOKEN'] == 0:
+                build_sell_conditions(token, 'before_buy', 'hide_message')
+            else:
+                build_sell_conditions(token, 'after_buy', 'hide_message')
+            
+            for new_token_dict in build_extended_base_configuration(token):
+                set_of_new_tokens.append(new_token_dict)
+        
+        elif token['WATCH_STABLES_PAIRS'] == 'true':
+            printt_warn("Ignoring WATCH_STABLES_PAIRS", "for", token['SYMBOL'], ": WATCH_STABLES_PAIRS = true and USECUSTOMBASEPAIR = true is unsupported.")
+        
+        if token['BUYPRICEINBASE'] == 'BUY_THE_DIP':
+            token.update({
+                'BUYPRICEINBASE': _TOKENS_saved[token['SYMBOL']]['BUYPRICEINBASE'],
+            })
+        
+        token.update({
+            '_LIQUIDITY_READY': _TOKENS_saved[token['SYMBOL']]['_LIQUIDITY_READY'],
+            '_LIQUIDITY_CHECKED': _TOKENS_saved[token['SYMBOL']]['_LIQUIDITY_CHECKED'],
+            '_INFORMED_SELL': _TOKENS_saved[token['SYMBOL']]['_INFORMED_SELL'],
+            '_REACHED_MAX_TOKENS': _TOKENS_saved[token['SYMBOL']]['_REACHED_MAX_TOKENS'],
+            '_TRADING_IS_ON': _TOKENS_saved[token['SYMBOL']]['_TRADING_IS_ON'],
+            '_RUGDOC_DECISION': _TOKENS_saved[token['SYMBOL']]['_RUGDOC_DECISION'],
+            '_GAS_TO_USE': _TOKENS_saved[token['SYMBOL']]['_GAS_TO_USE'],
+            '_GAS_IS_CALCULATED': _TOKENS_saved[token['SYMBOL']]['_GAS_IS_CALCULATED'],
+            '_FAILED_TRANSACTIONS': _TOKENS_saved[token['SYMBOL']]['_FAILED_TRANSACTIONS'],
+            '_SUCCESS_TRANSACTIONS': _TOKENS_saved[token['SYMBOL']]['_SUCCESS_TRANSACTIONS'],
+            '_REACHED_MAX_SUCCESS_TX': _TOKENS_saved[token['SYMBOL']]['_REACHED_MAX_SUCCESS_TX'],
+            '_TOKEN_BALANCE': _TOKENS_saved[token['SYMBOL']]['_TOKEN_BALANCE'],
+            '_PREVIOUS_TOKEN_BALANCE': _TOKENS_saved[token['SYMBOL']]['_PREVIOUS_TOKEN_BALANCE'],
+            '_BASE_BALANCE': _TOKENS_saved[token['SYMBOL']]['_BASE_BALANCE'],
+            '_BASE_PRICE': _TOKENS_saved[token['SYMBOL']]['_BASE_PRICE'],
+            '_TRAILING_STOP_LOSS_PRICE': _TOKENS_saved[token['SYMBOL']]['_TRAILING_STOP_LOSS_PRICE'],
+            '_TRAILING_STOP_LOSS_WITHOUT_PERCENT': _TOKENS_saved[token['SYMBOL']]['_TRAILING_STOP_LOSS_WITHOUT_PERCENT'],
+            '_BASE_USED_FOR_TX': _TOKENS_saved[token['SYMBOL']]['_BASE_USED_FOR_TX'],
+            '_PAIR_TO_DISPLAY': _TOKENS_saved[token['SYMBOL']]['_PAIR_TO_DISPLAY'],
+            '_CUSTOM_BASE_BALANCE': _TOKENS_saved[token['SYMBOL']]['_CUSTOM_BASE_BALANCE'],
+            '_QUOTE': _TOKENS_saved[token['SYMBOL']]['_QUOTE'],
+            '_PREVIOUS_QUOTE': _TOKENS_saved[token['SYMBOL']]['_PREVIOUS_QUOTE'],
+            '_LISTING_QUOTE': _TOKENS_saved[token['SYMBOL']]['_LISTING_QUOTE'],
+            '_BUY_THE_DIP_ACTIVE': _TOKENS_saved[token['SYMBOL']]['_BUY_THE_DIP_ACTIVE'],
+            '_ALL_TIME_HIGH': _TOKENS_saved[token['SYMBOL']]['_ALL_TIME_HIGH'],
+            '_COST_PER_TOKEN': _TOKENS_saved[token['SYMBOL']]['_COST_PER_TOKEN'],
+            '_CALCULATED_SELLPRICEINBASE': _TOKENS_saved[token['SYMBOL']]['_CALCULATED_SELLPRICEINBASE'],
+            '_CALCULATED_STOPLOSSPRICEINBASE': _TOKENS_saved[token['SYMBOL']]['_CALCULATED_STOPLOSSPRICEINBASE'],
+            '_ALL_TIME_LOW': _TOKENS_saved[token['SYMBOL']]['_ALL_TIME_LOW'],
+            '_CONTRACT_DECIMALS': _TOKENS_saved[token['SYMBOL']]['_CONTRACT_DECIMALS'],
+            '_BASE_DECIMALS': _TOKENS_saved[token['SYMBOL']]['_BASE_DECIMALS'],
+            '_WETH_DECIMALS': _TOKENS_saved[token['SYMBOL']]['_WETH_DECIMALS'],
+            '_LIQUIDITY_DECIMALS': _TOKENS_saved[token['SYMBOL']]['_LIQUIDITY_DECIMALS'],
+            '_LAST_PRICE_MESSAGE': _TOKENS_saved[token['SYMBOL']]['_LAST_PRICE_MESSAGE'],
+            '_LAST_MESSAGE': _TOKENS_saved[token['SYMBOL']]['_LAST_MESSAGE'],
+            '_FIRST_SELL_QUOTE': _TOKENS_saved[token['SYMBOL']]['_FIRST_SELL_QUOTE'],
+            '_BUILT_BY_BOT': _TOKENS_saved[token['SYMBOL']]['_BUILT_BY_BOT'],
+            '_EXCHANGE_BASE_SYMBOL': _TOKENS_saved[token['SYMBOL']]['_EXCHANGE_BASE_SYMBOL'],
+            '_PAIR_SYMBOL': _TOKENS_saved[token['SYMBOL']]['_PAIR_SYMBOL'],
+            '_IN_TOKEN': _TOKENS_saved[token['SYMBOL']]['_IN_TOKEN'],
+            '_OUT_TOKEN': _TOKENS_saved[token['SYMBOL']]['_OUT_TOKEN'],
+            '_NOT_ENOUGH_TO_BUY': _TOKENS_saved[token['SYMBOL']]['_NOT_ENOUGH_TO_BUY']
+        })
+    
+    # Add any tokens generated by "WATCH_STABLES_PAIRS" to the tokens list.
+    for token_dict in set_of_new_tokens:
+        tokens.append(token_dict)
+    
+    printt_debug("tokens after reload:", tokens)
+    printt_debug("EXIT reload_tokens_file")
+    return tokens
 
 def build_extended_base_configuration(token_dict):
     # Function: build_extended_base_configuration
@@ -1849,6 +2335,9 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                         # LIQUIDITYINNATIVETOKEN = true
                         # Exchange different from Uniswap
                         printt_debug("make_the_buy condition 8", write_to_log=True)
+                        printt_debug("amount      :", amount)
+                        printt_debug("amountOutMin:", amountOutMin)
+
                         transaction = routerContract.functions.swapExactTokensForTokens(
                             amount,
                             amountOutMin,
