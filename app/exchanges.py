@@ -913,4 +913,6 @@ def getRouters(settings, Web3):
     # Necessary to scan mempool
     client.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-    return client, routerAddress, factoryAddress, routerContract, factoryContract, weth, base_symbol, modified
+    return client, routerAddress, factoryAddress, routerContract, factoryContract, weth, base_symbol, modified, my_provider, rugdocchain
+
+

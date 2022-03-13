@@ -8,6 +8,8 @@ import os
 import logging
 import sys
 import apprise
+import cryptocode, re, pwinput
+import requests
 
 
 # color styles
@@ -256,6 +258,38 @@ def printt_buy_price(token_dict, token_price):
     
     printt_sell_price(token_dict, token_price)
 
+
+def save_settings(settings, pwd):
+    if len(pwd) > 0:
+        encrypted_settings = settings.copy()
+        encrypted_settings['LIMITWALLETPRIVATEKEY'] = 'aes:' + cryptocode.encrypt(settings['LIMITWALLETPRIVATEKEY'], pwd)
+        encrypted_settings['PRIVATEKEY'] = 'aes:' + cryptocode.encrypt(settings['PRIVATEKEY'], pwd)
+        if settings['PRIVATEKEY2'] != 'null':
+            encrypted_settings['PRIVATEKEY2'] = 'aes:' + cryptocode.encrypt(settings['PRIVATEKEY2'], pwd)
+        if settings['PRIVATEKEY3'] != 'null':
+            encrypted_settings['PRIVATEKEY3'] = 'aes:' + cryptocode.encrypt(settings['PRIVATEKEY3'], pwd)
+        if settings['PRIVATEKEY4'] != 'null':
+            encrypted_settings['PRIVATEKEY4'] = 'aes:' + cryptocode.encrypt(settings['PRIVATEKEY4'], pwd)
+        if settings['PRIVATEKEY5'] != 'null':
+            encrypted_settings['PRIVATEKEY5'] = 'aes:' + cryptocode.encrypt(settings['PRIVATEKEY5'], pwd)
+    
+    # TODO: MASSAGE OUTPUT - LimitSwap currently loads settings.json as a [0] element, so we need to massage our
+    #                  settings.json output so that it's reasable. This should probably be fixed by us importing
+    #                  the entire json file, instead of just the [0] element.
+    
+    print(timestamp(), "Writing settings to file.")
+    
+    if settings['ENCRYPTPRIVATEKEYS'] == "true":
+        output_settings = encrypted_settings
+    else:
+        output_settings = settings
+    
+    with open(command_line_args.settings, 'w') as f:
+        f.write("[\n")
+        f.write(json.dumps(output_settings, indent=4))
+        f.write("\n]\n")
+
+
 def load_settings_file(settings_path, load_message=True):
     # Function: load_settings_file
     # ----------------------------
@@ -361,6 +395,40 @@ def load_settings_file(settings_path, load_message=True):
     
     return bot_settings, settings
 
+
+def decode_key(client):
+    printt_debug("ENTER decode_key")
+    private_key = settings['LIMITWALLETPRIVATEKEY']
+    acct = client.eth.account.privateKeyToAccount(private_key)
+    addr = acct.address
+    return addr
+
+
+def auth(Web3):
+    my_provider2 = 'https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161'
+    client2 = Web3(Web3.HTTPProvider(my_provider2))
+    print(timestamp(), "Connected to ETH to check your LIMIT tokens =", client2.isConnected())
+    address = Web3.toChecksumAddress("0x1712aad2c773ee04bdc9114b32163c058321cd85")
+    abi = standardAbi
+    balanceContract = client2.eth.contract(address=address, abi=abi)
+    decimals = balanceContract.functions.decimals().call()
+    DECIMALS = 10 ** decimals
+    
+    # Exception for incorrect Key Input
+    try:
+        decode = decode_key(client2)
+    except Exception:
+        printt_err("There is a problem with your private key: please check if it's correct. Don't enter your seed phrase !")
+        sleep(10)
+        sys.exit()
+    
+    wallet_address = Web3.toChecksumAddress(decode)
+    balance = balanceContract.functions.balanceOf(wallet_address).call()
+    true_balance = balance / DECIMALS
+    printt("Current Tokens Staked = ", true_balance, write_to_log=False)
+    return true_balance
+
+
 def apprise_notification(token, parameter):
     printt_debug("ENTER pushsafer_notification")
     
@@ -440,6 +508,142 @@ def reload_bot_settings(bot_settings_dict):
         bot_settings_dict[value] = program_defined_values[value]
 
 
+def parse_wallet_settings(settings, pwd):
+    # Function: load_wallet_settings
+    # ----------------------------
+    # Handles the process of deciding whether or not the user's private key needs to be decrypted
+    # Accepts user input for new private keys and wallet addresses
+    #
+    # returns: none (exits on incorrect password)
+    
+    settings_changed = False
+    
+    # Check for limit wallet information
+    if " " in settings['LIMITWALLETADDRESS'] or settings['LIMITWALLETADDRESS'] == "":
+        settings_changed = True
+        settings['LIMITWALLETADDRESS'] = input("Please provide the wallet address where you have your LIMIT: ")
+    
+    # Check for limit wallet private key
+    if " " in settings['LIMITWALLETPRIVATEKEY'] or settings['LIMITWALLETPRIVATEKEY'] == "":
+        settings_changed = True
+        settings['LIMITWALLETPRIVATEKEY'] = input("Please provide the private key for the wallet where you have your LIMIT: ")
+    
+    # If the limit wallet private key is already set and encrypted, decrypt it
+    elif settings['LIMITWALLETPRIVATEKEY'].startswith('aes:'):
+        printt("Decrypting limit wallet private key.")
+        settings['LIMITWALLETPRIVATEKEY'] = settings['LIMITWALLETPRIVATEKEY'].replace('aes:', "", 1)
+        settings['LIMITWALLETPRIVATEKEY'] = cryptocode.decrypt(settings['LIMITWALLETPRIVATEKEY'], pwd)
+        
+        if settings['LIMITWALLETPRIVATEKEY'] == False:
+            printt_err("ERROR: Your private key decryption password is incorrect")
+            printt_err("Please re-launch the bot and try again")
+            sleep(10)
+            sys.exit()
+    
+    # Check for trading wallet information
+    if " " in settings['WALLETADDRESS'] or settings['WALLETADDRESS'] == "":
+        settings_changed = True
+        settings['WALLETADDRESS'] = input("Please provide the wallet address for your trading wallet: ")
+    
+    # Check for trading wallet private key
+    if " " in settings['PRIVATEKEY'] or settings['PRIVATEKEY'] == "":
+        settings_changed = True
+        settings['PRIVATEKEY'] = input("Please provide the private key for the wallet you want to trade with: ")
+    
+    # If the trading wallet private key is already set and encrypted, decrypt it
+    elif settings['PRIVATEKEY'].startswith('aes:'):
+        print(timestamp(), "Decrypting trading wallet private key.")
+        settings['PRIVATEKEY'] = settings['PRIVATEKEY'].replace('aes:', "", 1)
+        settings['PRIVATEKEY'] = cryptocode.decrypt(settings['PRIVATEKEY'], pwd)
+    
+    # add of 2nd wallet
+    if settings['WALLETADDRESS2'] == 'no_utility' or settings['PRIVATEKEY2'].startswith('aes:'):
+        stoptheprocess = 1
+    else:
+        decision = ""
+        while decision != "y" and decision != "n":
+            decision = input(style.BLUE + "\nWould you like to add a 2nd wallet to use MULTIPLEBUYS feature? (y/n): ")
+        
+        if decision == "y":
+            print(style.RESET + " ")
+            # Check for trading wallet information
+            if " " in settings['WALLETADDRESS2'] or settings['WALLETADDRESS2'] == "null":
+                settings_changed = True
+                settings['WALLETADDRESS2'] = input("Please provide the 2nd trading wallet address: ")
+            
+            # Check for trading wallet private key
+            if " " in settings['PRIVATEKEY2'] or settings['PRIVATEKEY2'] == "null":
+                settings_changed = True
+                settings['PRIVATEKEY2'] = input("Please provide the 2nd private key for the 2nd trading wallet: ")
+            stoptheprocess = 0
+        else:
+            settings['WALLETADDRESS2'] = "no_utility"
+            stoptheprocess = 1
+    
+    # add of 3nd wallet
+    if stoptheprocess != 1:
+        decision = ""
+        while decision != "y" and decision != "n":
+            decision = input(style.BLUE + "\nWould you like to a 3rd wallet to use MULTIPLEBUYS feature ? (y/n): ")
+        
+        if decision == "y":
+            print(style.RESET + " ")
+            # Check for trading wallet information
+            if " " in settings['WALLETADDRESS3'] or settings['WALLETADDRESS3'] == "null":
+                settings_changed = True
+                settings['WALLETADDRESS3'] = input("Please provide the 3rd trading wallet address: ")
+            
+            # Check for trading wallet private key
+            if " " in settings['PRIVATEKEY3'] or settings['PRIVATEKEY3'] == "null":
+                settings_changed = True
+                settings['PRIVATEKEY3'] = input("Please provide the 3rd private key for the 3rd trading wallet: ")
+            stoptheprocess = 0
+        else:
+            stoptheprocess = 1
+    
+    # add of 4th wallet
+    if stoptheprocess != 1:
+        decision = ""
+        while decision != "y" and decision != "n":
+            decision = input(style.BLUE + "\nWould you like to a 4th wallet to use MULTIPLEBUYS feature ? (y/n): ")
+        
+        if decision == "y":
+            print(style.RESET + " ")
+            # Check for trading wallet information
+            if " " in settings['WALLETADDRESS4'] or settings['WALLETADDRESS4'] == "null":
+                settings_changed = True
+                settings['WALLETADDRESS4'] = input("Please provide the 4th trading wallet address: ")
+            
+            # Check for trading wallet private key
+            if " " in settings['PRIVATEKEY4'] or settings['PRIVATEKEY4'] == "null":
+                settings_changed = True
+                settings['PRIVATEKEY4'] = input("Please provide the 4th private key for the 4th trading wallet: ")
+            stoptheprocess = 0
+        else:
+            stoptheprocess = 1
+    
+    # add of 5th wallet
+    if stoptheprocess != 1:
+        decision = ""
+        while decision != "y" and decision != "n":
+            decision = input(style.BLUE + "\nWould you like to a 5th wallet to use MULTIPLEBUYS feature ? (y/n): ")
+        
+        if decision == "y":
+            print(style.RESET + " ")
+            # Check for trading wallet information
+            if " " in settings['WALLETADDRESS5'] or settings['WALLETADDRESS5'] == "null":
+                settings_changed = True
+                settings['WALLETADDRESS5'] = input("Please provide the 5th trading wallet address: ")
+            
+            # Check for trading wallet private key
+            if " " in settings['PRIVATEKEY5'] or settings['PRIVATEKEY5'] == "null":
+                settings_changed = True
+                settings['PRIVATEKEY5'] = input("Please provide the 5th private key for the 5th trading wallet: ")
+    
+    if settings_changed == True:
+        save_settings(settings, pwd)
+    print(style.RESET + " ")
+
 
 def token_list_report(tokens, all_pairs=False):
     # Function: token_list_report
@@ -479,6 +683,100 @@ def check_release():
     
     return r
 
+
+def get_password():
+    # Function: get_password
+    # ----------------------------
+    # Handles the decision making logic concerning private key encryption and asking the user for their password.
+    #
+    # returns: the user's password
+    
+    settings_changed = False
+    setnewpassword = False
+    
+    # Check to see if the user has a version of the settings file before private key encryption existed
+    if 'ENCRYPTPRIVATEKEYS' not in settings:
+        response = ""
+        settings_changed = True
+        while response != "y" and response != "n":
+            print("\nWould you like to use a password to encrypt your private keys?")
+            response = input("You will need to input this password each time LimitSwap is executed (y/n): ")
+        
+        if response == "y":
+            settings['ENCRYPTPRIVATEKEYS'] = "true"
+            setnewpassword = True
+        else:
+            settings['ENCRYPTPRIVATEKEYS'] = "false"
+            
+            # If the user wants to encrypt their private keys, but we don't have an encrypted private key recorded, we need to ask for a password
+    elif settings['ENCRYPTPRIVATEKEYS'] == "true" and not settings['PRIVATEKEY'].startswith('aes:'):
+        print("\nPlease create a password to encrypt your private keys.")
+        setnewpassword = True
+    
+    # Set a new password when necessary
+    if setnewpassword == True:
+        settings_changed = True
+        passwords_differ = True
+        while passwords_differ:
+            pwd = pwinput.pwinput(prompt="\nType your new password: ")
+            pwd2 = pwinput.pwinput(prompt="\nType your new password again: ")
+            
+            if pwd != pwd2:
+                print("Error, password mismatch. Try again.")
+            else:
+                passwords_differ = False
+    
+    # The user already has encrypted private keys. Accept a password so we can unencrypt them
+    elif settings['ENCRYPTPRIVATEKEYS'] == "true":
+        
+        if command_line_args.password:
+            pwd = command_line_args.password
+        else:
+            pwd = pwinput.pwinput(prompt="\nPlease specify the password to decrypt your keys: ")
+    
+    else:
+        pwd = ""
+    
+    if not pwd.strip():
+        print()
+        print("X WARNING =-= WARNING =-= WARNING =-= WARNING =-= WARNING =-= WARNING=-= WARNING X")
+        print("X       You are running LimitSwap without encrypting your private keys.          X")
+        print("X     Private keys are stored on disk unencrypted and can be accessed by         X")
+        print("X anyone with access to the file system, including the Systems/VPS administrator X")
+        print("X       and anyone with physical access to the machine or hard drives.           X")
+        print("X WARNING =-= WARNING =-= WARNING =-= WARNING =-= WARNING =-= WARNING=-= WARNING X")
+        print()
+    
+    if settings_changed == True:
+        save_settings(settings, pwd)
+    
+    return pwd
+
+
+# RUGDOC CONTROL IMPLEMENTATION
+# Rugdoc's answers interpretations
+#
+
+interpretations = {
+    "UNKNOWN": (style.RED + 'The status of this token is unknown. '
+                            '                           This is usually a system error but could also be a bad sign for the token. Be careful.'),
+    "OK": (style.GREEN + 'RUGDOC API RESULT : OK \n'
+                         '                           √ Honeypot tests passed. RugDoc program was able to buy and sell it successfully. This however does not guarantee that it is not a honeypot.'),
+    "NO_PAIRS": (style.RED + 'RUGDOC API RESULT : NO_PAIRS \n'
+                             '                           ⚠ Could not find any trading pair for this token on the default router and could thus not test it.'),
+    "SEVERE_FEE": (style.RED + 'RUGDOC API RESULT : SEVERE_FEE \n'
+                               '                           /!\ /!\ A severely high trading fee (over 50%) was detected when selling or buying this token.'),
+    "HIGH_FEE": (style.YELLOW + 'RUGDOC API RESULT : HIGH_FEE \n'
+                                '                           /!\ /!\ A high trading fee (Between 20% and 50%) was detected when selling or buying this token. Our system was however able to sell the token again.'),
+    "MEDIUM_FEE": (style.YELLOW + 'RUGDOC API RESULT : MEDIUM_FEE \n'
+                                  '                           /!\ A trading fee of over 10% but less then 20% was detected when selling or buying this token. Our system was however able to sell the token again.'),
+    "APPROVE_FAILED": (style.RED + 'RUGDOC API RESULT : APPROVE_FAILED \n'
+                                   '                           /!\ /!\ /!\ Failed to approve the token.\n This is very likely a honeypot.'),
+    "SWAP_FAILED": (style.RED + 'RUGDOC API RESULT : SWAP_FAILED \n'
+                                '                           /!\ /!\ /!\ Failed to sell the token. \n This is very likely a honeypot.'),
+    "chain not found": (style.RED + 'RUGDOC API RESULT : chain not found \n'
+                                    '                           /!\ Sorry, rugdoc API does not work on this chain... (it does not work on ETH, mainly) \n')
+}
 
 """""""""""""""""""""""""""
 //PRELOAD
