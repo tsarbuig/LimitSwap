@@ -68,6 +68,7 @@ parser.add_argument("--sim_buy", type=str, help=argparse.SUPPRESS)
 parser.add_argument("--sim_sell", type=str, help=argparse.SUPPRESS)
 parser.add_argument("--debug", action='store_true', help=argparse.SUPPRESS)
 parser.add_argument("--benchmark", action='store_true', help=argparse.SUPPRESS)
+parser.add_argument("--analyze", type=str, help="analyze a Tx hash")
 
 command_line_args = parser.parse_args()
 
@@ -485,6 +486,7 @@ def apprise_notification(token, parameter):
         printt_err("APPRISE - an Exception occured : check your logs")
         logging.exception(ee)
 
+
 def get_file_modified_time(file_path, last_known_modification=0):
     modified_time = os.path.getmtime(file_path)
     
@@ -492,6 +494,7 @@ def get_file_modified_time(file_path, last_known_modification=0):
         printt_debug(file_path, "has been modified.")
     
     return last_known_modification
+
 
 def reload_bot_settings(bot_settings_dict):
     # Function: reload_settings_file()
@@ -672,6 +675,7 @@ def token_list_report(tokens, all_pairs=False):
         printt("Quantity of tokens attempting to trade:", tokens_trading, "(", token_list, ")")
     else:
         printt("Quantity of tokens attempting to trade:", len(tokens), "(", token_list, ")")
+
 
 def check_release():
     try:

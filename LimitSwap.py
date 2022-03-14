@@ -1117,22 +1117,42 @@ def buy_the_dip_mode(token, inToken, outToken):
         sleep(cooldown)
 
 
-def get_tokens_purchased(tx_hash):
-    # Function: get_tokens_purchased
+def analyze_tx(tx_hash):
+    # Function: analyze_tx
     # ----------------------------
-    # provides the number of tokens purchased in a transaction
+    # provides details about a transaction
     #
     # tx_hash = the transaction hash
     #
-    # returns: number of tokens purchased
     
     # Get transaction object
     tx = client.eth.get_transaction(tx_hash)
-    contract = client.eth.contract(address=tx["to"], abi=lpAbi)
-    
-    # decode input data using contract object's decode_function_input() method
-    func_obj, func_params = contract.decode_function_input(tx["input"])
-    print(func_params)
+    printt("")
+    printt("-  Tx DECODED:  ----------------------------------------------------------------")
+    printt(tx)
+    printt(tx['r'].hex())
+    printt(tx['s'].hex())
+    printt("--------------------------------------------------------------------------------")
+    printt("")
+    # tx2 = client.eth.get_transaction_receipt(tx_hash)
+    # printt("")
+    # printt("-Tx DECODED:--------------------------------------------------------------------")
+    # printt(tx2)
+    # printt("--------------------------------------------------------------------------------")
+    # printt("")
+    # decode input data
+    try:
+        input_decoded = routerContract.decode_function_input(tx['input'])
+    except Exception:
+        printt("-  Input DECODED:  -------------------------------------------------------------")
+        printt_info("There is no 'input' to decode")
+        printt("--------------------------------------------------------------------------------")
+        printt("")
+        exit(0)
+    printt("-  Input DECODED:  -------------------------------------------------------------")
+    printt(input_decoded)
+    printt("--------------------------------------------------------------------------------")
+    printt("")
     exit(0)
 
 
@@ -1721,7 +1741,7 @@ def calculate_base_balance(token):
         printt_err("You have less than 0.05 ETH or 0.03 BNB/FTM/MATIC/etc. token in your wallet, bot needs more to cover fees : please add some more in your wallet")
         printt_err("We know it can seem a lot, but the smart contracts used by Exchanges have automatic controls of minimal balance.")
         sleep(10)
-        exit(1)
+        sys.exit()
 
     # STEP 2 - update token['_BASE_BALANCE'] or token['_CUSTOM_BASE_BALANCE']
     if token['USECUSTOMBASEPAIR'].lower() == 'false':
@@ -3933,6 +3953,11 @@ try:
     # Benchmark mode
     if command_line_args.benchmark == True:
         benchmark()
+        
+    # analyze mode
+    if command_line_args.analyze:
+        tx_hash = command_line_args.analyze
+        analyze_tx(tx_hash)
     
     # Get the user password on first run
     userpassword = get_password()
