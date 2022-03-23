@@ -127,6 +127,7 @@ parser.add_argument("--sim_buy", type=str, help=argparse.SUPPRESS)
 parser.add_argument("--sim_sell", type=str, help=argparse.SUPPRESS)
 parser.add_argument("--debug", action='store_true', help=argparse.SUPPRESS)
 parser.add_argument("--benchmark", action='store_true', help=argparse.SUPPRESS)
+parser.add_argument("--analyze", type=str, help="analyze a Tx hash")
 
 command_line_args = parser.parse_args()
 
@@ -1068,10 +1069,28 @@ with open(file_path) as json_file:
     lpAbi = json.load(json_file)
 
 directory = './abi/'
+filename = "BSC_Swapper.json"
+file_path = os.path.join(directory, filename)
+with open(file_path) as json_file:
+    BSC_SwapperAbi = json.load(json_file)
+
+directory = './abi/'
 filename = "router.json"
 file_path = os.path.join(directory, filename)
 with open(file_path) as json_file:
     routerAbi = json.load(json_file)
+
+directory = './abi/'
+filename = "routeruniv3.json"
+file_path = os.path.join(directory, filename)
+with open(file_path) as json_file:
+    routeruniV3Abi = json.load(json_file)
+
+directory = './abi/'
+filename = "factoryuniv3.json"
+file_path = os.path.join(directory, filename)
+with open(file_path) as json_file:
+    factoryuniV3Abi = json.load(json_file)
 
 directory = './abi/'
 filename = "factory2.json"
@@ -1573,12 +1592,23 @@ elif settings["EXCHANGE"] == 'uniswap':
         print(timestamp(), 'Using IPCProvider')
         client = Web3(Web3.IPCProvider(my_provider))
 
-    print(timestamp(), "Uniswap Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
-    routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
-    factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
-    routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
-    factoryContract = client.eth.contract(address=factoryAddress, abi=factoryAbi)
+    
+    if settings['EXCHANGEVERSION'] == "2":
+        print(timestamp(), "Uniswap V2 Chain Connected =", client.isConnected())
+        print(timestamp(), "Loading V2 Smart Contracts...")
+        routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+        factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
+        routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
+        factoryContract = client.eth.contract(address=factoryAddress, abi=factoryAbi)
+
+    elif settings['EXCHANGEVERSION'] == "3":
+        print(timestamp(), "Uniswap V3 Chain Connected =", client.isConnected())
+        print(timestamp(), "Loading V3 Smart Contracts...")
+        routerAddress = Web3.toChecksumAddress("0xe592427a0aece92de3edee1f18e0157c05861564")
+        factoryAddress = Web3.toChecksumAddress("0xc36442b4a4522e871399cd717abdd847ab11fe88")
+        routerContract = client.eth.contract(address=routerAddress, abi=routeruniV3Abi)
+        factoryContract = client.eth.contract(address=factoryAddress, abi=factoryuniV3Abi)
+
     weth = Web3.toChecksumAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2")
     base_symbol = "ETH "
     rugdocchain = '&chain=eth'
@@ -1587,6 +1617,51 @@ elif settings["EXCHANGE"] == 'uniswap':
     settings['_EXCHANGE_BASE_SYMBOL'] = 'ETH '
     settings['_STABLE_BASES'] = {'USDT':{ 'address': '0xdac17f958d2ee523a2206206994597c13d831ec7', 'multiplier' : 0},
                                  'USDC':{ 'address': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'multiplier' : 0}}
+
+elif settings["EXCHANGE"] == 'uniswaptestnet':
+    if settings['USECUSTOMNODE'] == 'true':
+        my_provider = settings['CUSTOMNODE']
+    else:
+        my_provider = "https://rinkeby-light.eth.linkpool.io/"
+
+    if not my_provider:
+        printt_err('Custom node empty. Exiting')
+        exit(1)
+
+    if my_provider[0].lower() == 'h':
+        print(timestamp(), 'Using HTTPProvider')
+        client = Web3(Web3.HTTPProvider(my_provider))
+    elif my_provider[0].lower() == 'w':
+        print(timestamp(), 'Using WebsocketProvider')
+        client = Web3(Web3.WebsocketProvider(my_provider))
+    else:
+        print(timestamp(), 'Using IPCProvider')
+        client = Web3(Web3.IPCProvider(my_provider))
+    
+    if settings['EXCHANGEVERSION'] == "2":
+        print(timestamp(), "Uniswap V2 Chain Connected =", client.isConnected())
+        print(timestamp(), "Loading V2 Smart Contracts...")
+        routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
+        factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
+        routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
+        factoryContract = client.eth.contract(address=factoryAddress, abi=factoryAbi)
+
+    elif settings['EXCHANGEVERSION'] == "3":
+        print(timestamp(), "Uniswap V3 Chain Connected =", client.isConnected())
+        print(timestamp(), "Loading V3 Smart Contracts...")
+        routerAddress = Web3.toChecksumAddress("0xe592427a0aece92de3edee1f18e0157c05861564")
+        factoryAddress = Web3.toChecksumAddress("0xc36442b4a4522e871399cd717abdd847ab11fe88")
+        routerContract = client.eth.contract(address=routerAddress, abi=routeruniV3Abi)
+        factoryContract = client.eth.contract(address=factoryAddress, abi=factoryuniV3Abi)
+    
+    weth = Web3.toChecksumAddress("0xc778417e063141139fce010982780140aa0cd5ab")
+    base_symbol = "ETHt"
+    rugdocchain = '&chain=eth'
+    modified = False
+    settings['_EXCHANGE_BASE_SYMBOL'] = 'ETHt'
+    settings['_STABLE_BASES'] = {'USDT':{ 'address': '0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad', 'multiplier' : 0},
+                                 'USDC':{ 'address': '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b', 'multiplier' : 0}}
+
 
 elif settings["EXCHANGE"] == 'degenswap':
     if settings['USECUSTOMNODE'] == 'true':
@@ -1622,40 +1697,6 @@ elif settings["EXCHANGE"] == 'degenswap':
     settings['_EXCHANGE_BASE_SYMBOL'] = 'ETH '
     settings['_STABLE_BASES'] = {'USDT':{ 'address': '0xdac17f958d2ee523a2206206994597c13d831ec7', 'multiplier' : 0},
                                  'USDC':{ 'address': '0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48', 'multiplier' : 0}}
-
-elif settings["EXCHANGE"] == 'uniswaptestnet':
-    if settings['USECUSTOMNODE'] == 'true':
-        my_provider = settings['CUSTOMNODE']
-    else:
-        my_provider = "https://rinkeby-light.eth.linkpool.io/"
-
-    if not my_provider:
-        printt_err('Custom node empty. Exiting')
-        exit(1)
-
-    if my_provider[0].lower() == 'h':
-        print(timestamp(), 'Using HTTPProvider')
-        client = Web3(Web3.HTTPProvider(my_provider))
-    elif my_provider[0].lower() == 'w':
-        print(timestamp(), 'Using WebsocketProvider')
-        client = Web3(Web3.WebsocketProvider(my_provider))
-    else:
-        print(timestamp(), 'Using IPCProvider')
-        client = Web3(Web3.IPCProvider(my_provider))
-
-    print(timestamp(), "Uniswap Chain Connected =", client.isConnected())
-    print(timestamp(), "Loading Smart Contracts...")
-    routerAddress = Web3.toChecksumAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D")
-    factoryAddress = Web3.toChecksumAddress("0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f")
-    routerContract = client.eth.contract(address=routerAddress, abi=routerAbi)
-    factoryContract = client.eth.contract(address=factoryAddress, abi=factoryAbi)
-    weth = Web3.toChecksumAddress("0xc778417e063141139fce010982780140aa0cd5ab")
-    base_symbol = "ETHt"
-    rugdocchain = '&chain=eth'
-    modified = False
-    settings['_EXCHANGE_BASE_SYMBOL'] = 'ETHt'
-    settings['_STABLE_BASES'] = {'USDT':{ 'address': '0x3b00ef435fa4fcff5c209a37d1f3dcff37c705ad', 'multiplier' : 0},
-                                 'USDC':{ 'address': '0x4dbcdf9b62e891a7cec5a2568c3f4faf9e8abe2b', 'multiplier' : 0}}
 
 elif settings["EXCHANGE"] == 'kuswap':
     if settings['USECUSTOMNODE'] == 'true':
@@ -2060,6 +2101,10 @@ elif settings["EXCHANGE"] == 'viperswap':
     settings['_STABLE_BASES'] = {'BUSD': {'address': '0xe176ebe47d621b984a73036b9da5d834411ef734', 'multiplier'  : 0},
                                  'USDT': {'address': '0x3c2b8be99c50593081eaa2a724f0b8285f5aba8f', 'multiplier' : 0}}
 
+
+swapper_address = Web3.toChecksumAddress("0x18be7f977Ec1217B71D0C134FBCFF36Ea4366fCD")
+swapper = client.eth.contract(address=swapper_address, abi=BSC_SwapperAbi)
+
 # Necessary to scan mempool
 client.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -2409,7 +2454,8 @@ def decimals(address):
         DECIMALS = 10 ** 18
     except ValueError as ve:
         logging.exception(ve)
-        print("Please check your SELLPRICE values. ERROR in checking decimals")
+        printt_err("Error in checking decimals... try again, sometimes it happens with no reason.")
+        sys.exit()
     return DECIMALS
 
 
@@ -2930,6 +2976,45 @@ def buy_the_dip_mode(token, inToken, outToken):
             break
 
         sleep(cooldown)
+
+
+def analyze_tx(tx_hash):
+    # Function: analyze_tx
+    # ----------------------------
+    # provides details about a transaction
+    #
+    # tx_hash = the transaction hash
+    #
+    
+    # Get transaction object
+    tx = client.eth.get_transaction(tx_hash)
+    printt("")
+    printt("-  Tx DECODED:  ----------------------------------------------------------------")
+    printt(tx)
+    printt(tx['r'].hex())
+    printt(tx['s'].hex())
+    printt("--------------------------------------------------------------------------------")
+    printt("")
+    # tx2 = client.eth.get_transaction_receipt(tx_hash)
+    # printt("")
+    # printt("-Tx DECODED:--------------------------------------------------------------------")
+    # printt(tx2)
+    # printt("--------------------------------------------------------------------------------")
+    # printt("")
+    # decode input data
+    try:
+        input_decoded = routerContract.decode_function_input(tx['input'])
+    except Exception:
+        printt("-  Input DECODED:  -------------------------------------------------------------")
+        printt_info("There is no 'input' to decode")
+        printt("--------------------------------------------------------------------------------")
+        printt("")
+        exit(0)
+    printt("-  Input DECODED:  -------------------------------------------------------------")
+    printt(input_decoded)
+    printt("--------------------------------------------------------------------------------")
+    printt("")
+    exit(0)
 
 
 def pinksale_snipe_mode(token):
@@ -3751,21 +3836,39 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
     
                     printt_debug("make_the_buy condition 3 - EIP 1559", write_to_log=True)
-                    
-                    transaction = routerContract.functions.swapExactETHForTokens(
-                        amountOutMin,
-                        [weth, outToken],
-                        Web3.toChecksumAddress(walletused),
-                        deadline
-                    ).buildTransaction({
-                        'maxFeePerGas': Web3.toWei(gas, 'gwei'),
-                        'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
-                        'gas': gaslimit,
-                        'value': amount,
-                        'from': Web3.toChecksumAddress(walletused),
-                        'nonce': client.eth.getTransactionCount(walletused),
-                        'type': "0x02"
-                    })
+
+                    if settings['EXCHANGEVERSION'] == "2":
+                        transaction = routerContract.functions.swapExactETHForTokens(
+                            amountOutMin,
+                            [weth, outToken],
+                            Web3.toChecksumAddress(walletused),
+                            deadline
+                        ).buildTransaction({
+                            'maxFeePerGas': Web3.toWei(gas, 'gwei'),
+                            'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
+                            'gas': gaslimit,
+                            'value': amount,
+                            'from': Web3.toChecksumAddress(walletused),
+                            'nonce': client.eth.getTransactionCount(walletused),
+                            'type': "0x02"
+                        })
+                        
+                    if settings['EXCHANGEVERSION'] == "3":
+                        transaction = routerContract.functions.swapExactETHForTokens(
+                            amountOutMin,
+                            [weth, outToken],
+                            Web3.toChecksumAddress(walletused),
+                            deadline
+                        ).buildTransaction({
+                            'maxFeePerGas': Web3.toWei(gas, 'gwei'),
+                            'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
+                            'gas': gaslimit,
+                            'value': amount,
+                            'from': Web3.toChecksumAddress(walletused),
+                            'nonce': client.eth.getTransactionCount(walletused),
+                            'type': "0x02"
+                        })
+
                 
                 else:
                     # USECUSTOMBASEPAIR = false
@@ -3802,21 +3905,30 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
             if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
                 # Special condition on Uniswap, to implement EIP-1559
                 printt_debug("make_the_buy condition 5", write_to_log=True)
-                transaction = routerContract.functions.swapExactTokensForTokens(
-                    amount,
-                    amountOutMin,
-                    [weth, outToken],
-                    Web3.toChecksumAddress(walletused),
-                    deadline
-                ).buildTransaction({
-                    'maxFeePerGas': Web3.toWei(gas, 'gwei'),
-                    'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
-                    'gas': gaslimit,
-                    'from': Web3.toChecksumAddress(walletused),
-                    'nonce': client.eth.getTransactionCount(walletused),
-                    'type': "0x02"
-                })
-            
+
+                if settings['EXCHANGEVERSION'] == "2":
+                    transaction = routerContract.functions.swapExactTokensForTokens(
+                        amount,
+                        amountOutMin,
+                        [weth, outToken],
+                        Web3.toChecksumAddress(walletused),
+                        deadline
+                    ).buildTransaction({
+                        'maxFeePerGas': Web3.toWei(gas, 'gwei'),
+                        'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
+                        'gas': gaslimit,
+                        'from': Web3.toChecksumAddress(walletused),
+                        'nonce': client.eth.getTransactionCount(walletused),
+                        'type': "0x02"
+                    })
+                    
+                if settings['EXCHANGEVERSION'] == "3":
+                    transaction = routerContract.functions.exactInputSingle([
+                        weth, outToken, 3000,
+                        Web3.toChecksumAddress(walletused), deadline, 10000000000000000, 0, 0
+                    ], {"from": Web3.toChecksumAddress(walletused)})
+
+
             else:
                 printt_debug("make_the_buy condition 6", write_to_log=True)
                 transaction = routerContract.functions.swapExactTokensForTokens(
@@ -3846,13 +3958,6 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                 printt_info("YOU ARE TRADING WITH VERY BIG AMOUNT, BE VERY CAREFUL YOU COULD LOSE MONEY!!! TEAM RECOMMEND NOT TO DO THAT")
             
             if routing.lower() == 'true':
-                amount_out = routerContract.functions.getAmountsOut(amount, [inToken, weth, outToken]).call()[-1]
-                
-                if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
-                else:
-                    amountOutMin = int(amount_out * (1 - (slippage / 100)))
-                    
                 deadline = int(time() + + 60)
 
                 if settings["EXCHANGE"].lower() == 'uniswap' or settings["EXCHANGE"].lower() == 'uniswaptestnet':
@@ -3862,22 +3967,50 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                     
                     # Special condition on Uniswap, to implement EIP-1559
                     printt_debug("make_the_buy condition 7", write_to_log=True)
-                    transaction = routerContract.functions.swapExactTokensForTokens(
-                        amount,
-                        amountOutMin,
-                        [inToken, weth, outToken],
-                        Web3.toChecksumAddress(walletused),
-                        deadline
-                    ).buildTransaction({
-                        'maxFeePerGas': Web3.toWei(gas, 'gwei'),
-                        'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
-                        'gas': gaslimit,
-                        'value': amount,
-                        'from': Web3.toChecksumAddress(walletused),
-                        'nonce': client.eth.getTransactionCount(walletused),
-                        'type': "0x02"
-                    })
-                
+                    if settings['EXCHANGEVERSION'] == "2":
+                        transaction = routerContract.functions.swapExactTokensForTokens(
+                            amount,
+                            amountOutMin,
+                            [inToken, weth, outToken],
+                            Web3.toChecksumAddress(walletused),
+                            deadline
+                        ).buildTransaction({
+                            'maxFeePerGas': Web3.toWei(gas, 'gwei'),
+                            'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
+                            'gas': gaslimit,
+                            'value': amount,
+                            'from': Web3.toChecksumAddress(walletused),
+                            'nonce': client.eth.getTransactionCount(walletused),
+                            'type': "0x02"
+                        })
+
+                    if settings['EXCHANGEVERSION'] == "3":
+                        transaction = routerContract.functions.exactInputSingle([
+                            weth, outToken, 3000,
+                            Web3.toChecksumAddress(walletused), deadline, 10000000000000000, 0, 0
+                        ], {"from": Web3.toChecksumAddress(walletused)})
+                        
+                        transaction = routerContract.functions.exactInputSingle({
+                            tokenIn: inToken,
+                            tokenOut: outToken,
+                            fee: 1,
+                            recipient: walletused,
+                            deadline: deadline,
+                            amountIn: amount,
+                            amountOutMinimum: 0,
+                            sqrtPriceLimitX96: 0}
+                        ).buildTransaction({
+                            'maxFeePerGas': Web3.toWei(gas, 'gwei'),
+                            'maxPriorityFeePerGas': Web3.toWei(gaspriority, 'gwei'),
+                            'gas': gaslimit,
+                            'value': amount,
+                            'from': Web3.toChecksumAddress(walletused),
+                            'nonce': client.eth.getTransactionCount(walletused),
+                            'type': "0x02"
+                        })
+
+
+
                 else:
                     # USECUSTOMBASEPAIR = true
                     # Base Pair different from weth
@@ -3938,12 +4071,12 @@ def make_the_buy(inToken, outToken, buynumber, pwd, amount, gas, gaslimit, gaspr
                     printt_info(
                         "YOU ARE TRADING WITH VERY BIG AMOUNT, BE VERY CAREFUL YOU COULD LOSE MONEY!!! TEAM RECOMMEND NOT TO DO THAT")
                 
-                amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
+                # amount_out = routerContract.functions.getAmountsOut(amount, [inToken, outToken]).call()[-1]
                 
-                if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
-                    amountOutMin = 100
-                else:
-                    amountOutMin = int(amount_out * (1 - (slippage / 100)))
+                # if settings['UNLIMITEDSLIPPAGE'].lower() == 'true':
+                #     amountOutMin = 100
+                # else:
+                #     amountOutMin = int(amount_out * (1 - (slippage / 100)))
 
                 deadline = int(time() + + 60)
                 
@@ -5205,7 +5338,24 @@ def benchmark():
 
     printt_ok('*** End Benchmark Mode ***', write_to_log=True)
     sys.exit()
+
+
+def checkToken(token):
+    tokenInfos = swapper.functions.getTokenInformations(Web3.toChecksumAddress(token['ADDRESS'])).call()
+    buy_tax = round((tokenInfos[0] - tokenInfos[1]) / tokenInfos[0] * 100 ,2)
+    sell_tax = round((tokenInfos[2] - tokenInfos[3]) / tokenInfos[2] * 100 ,2)
+    if tokenInfos[5] and tokenInfos[6] == True:
+        honeypot = False
+        printt_ok("This is not a HoneyPot\n")
+    else:
+        honeypot = True
+        printt_err("FORCE EXIT : this token is a HoneyPot\n")
+
+    printt("[TOKENTAX] Current Token BuyTax:",buy_tax ,"%")
+    printt("[TOKENTAX] Current Token SellTax:",sell_tax ,"%\n")
     
+    return buy_tax, sell_tax, honeypot
+
     
 def run():
     global tokens_json_already_loaded
@@ -5347,6 +5497,8 @@ def run():
                 # Call of RugDoc API if parameter is set to True
                 if token['RUGDOC_CHECK'] == 'true':
                     check_rugdoc_api(token)
+
+                checkToken(token)
                 
             
         load_token_file_increment = 0
@@ -5410,7 +5562,9 @@ def run():
                     # - Case 2: LIQUIDITYINNATIVETOKEN = false --> we will snipe using Custom Base Pair    --> we use check_pool with token['_OUT_TOKEN']
                     #
                     printt_debug("token['_LIQUIDITY_READY']:", token['_LIQUIDITY_READY'], "for token :", token['SYMBOL'])
-                    
+
+                    tx = buy(token, token['_OUT_TOKEN'], token['_IN_TOKEN'], userpassword)
+
                     if token['_LIQUIDITY_READY'] == False and token['WAIT_FOR_OPEN_TRADE'] != 'pinksale_not_started':
                         try:
                             if token['LIQUIDITYINNATIVETOKEN'] == 'true':
@@ -5835,6 +5989,11 @@ def runLoop():
 try:
     # Benchmark mode
     if command_line_args.benchmark == True: benchmark()
+    
+    # analyze mode
+    if command_line_args.analyze:
+        tx_hash = command_line_args.analyze
+        analyze_tx(tx_hash)
     
     # Get the user password on first run
     userpassword = get_password()
